@@ -39,15 +39,23 @@ body.ready .app{ opacity:1; transform:none }
 }
 .capsule{
   width:200px; background:var(--brand); color:#fff;
-  border-radius:9999px; min-height:44px; display:block; position:relative;
+  border-radius:9999px; min-height:44px; position:relative;
   box-shadow:0 1px 3px rgba(0,0,0,.08)
 }
-/* judul filter selalu terlihat */
+/* Judul filter (kiri) */
 .capsule label{
-  position:absolute; left:12px; right:28px; top:50%; transform:translateY(-50%);
-  margin:0; color:#fff; font-size:12px; font-weight:800; letter-spacing:.02em; white-space:nowrap; pointer-events:none
+  position:absolute; left:12px; right:100px; top:50%;
+  transform:translateY(-50%); margin:0; color:#fff;
+  font-size:12px; font-weight:800; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
 }
-/* select transparan full area */
+/* Nilai terpilih (kanan) – putih, non-bold */
+.capsule .cap-value{
+  position:absolute; right:28px; left:100px; top:50%;
+  transform:translateY(-50%); color:#fff; font-weight:400; font-size:12px;
+  text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
+}
+.capsule .cap-value:empty{ display:none }
+/* Select transparan full area */
 .capsule select{
   position:absolute; inset:0; width:100%; height:100%;
   background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none
@@ -115,10 +123,8 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   .filters.open{ max-height:1100px; opacity:1 }
 
   .capsule{ width:100% }
-  .capsule label{ display:block }  /* judul filter terlihat */
-
-  .pies{ grid-template-columns:1fr }
-  .pie-wrap canvas{ height:220px !important }
+  .capsule label{ display:block }
+  .block canvas{ height:220px !important }
 }
 </style>
 </head>
@@ -142,15 +148,39 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 
   <!-- FILTERS -->
   <section id="filters" class="filters">
-    <div class="capsule"><label for="f-year">Tahun</label><select id="f-year"><option value="">Semua Tahun</option></select></div>
-    <div class="capsule"><label for="f-month">Bulan</label><select id="f-month" disabled><option value="">Semua Bulan</option></select></div>
-    <div class="capsule"><label for="f-day">Tanggal</label><select id="f-day" disabled><option value="">Semua Tanggal</option></select></div>
-    <div class="capsule"><label for="f-minat">Minat Posisi</label><select id="f-minat"><option value="">Semua</option></select></div>
+    <div class="capsule">
+      <label for="f-year">Tahun</label><span class="cap-value" id="val-year"></span>
+      <select id="f-year"><option value="">Semua Tahun</option></select>
+    </div>
+    <div class="capsule">
+      <label for="f-month">Bulan</label><span class="cap-value" id="val-month"></span>
+      <select id="f-month" disabled><option value="">Semua Bulan</option></select>
+    </div>
+    <div class="capsule">
+      <label for="f-day">Tanggal</label><span class="cap-value" id="val-day"></span>
+      <select id="f-day" disabled><option value="">Semua Tanggal</option></select>
+    </div>
+    <div class="capsule">
+      <label for="f-minat">Minat Posisi</label><span class="cap-value" id="val-minat"></span>
+      <select id="f-minat"><option value="">Semua</option></select>
+    </div>
 
-    <div class="capsule"><label for="f-peng">Pengalaman Terakhir</label><select id="f-peng"><option value="">Semua</option></select></div>
-    <div class="capsule"><label for="f-pend">Pendidikan Terakhir</label><select id="f-pend"><option value="">Semua</option></select></div>
-    <div class="capsule"><label for="f-prov">Provinsi Minat</label><select id="f-prov"><option value="">Semua</option></select></div>
-    <div class="capsule"><label for="f-kota">Kota Minat</label><select id="f-kota"><option value="">Semua</option></select></div>
+    <div class="capsule">
+      <label for="f-peng">Pengalaman Terakhir</label><span class="cap-value" id="val-peng"></span>
+      <select id="f-peng"><option value="">Semua</option></select>
+    </div>
+    <div class="capsule">
+      <label for="f-pend">Pendidikan Terakhir</label><span class="cap-value" id="val-pend"></span>
+      <select id="f-pend"><option value="">Semua</option></select>
+    </div>
+    <div class="capsule">
+      <label for="f-prov">Provinsi Minat</label><span class="cap-value" id="val-prov"></span>
+      <select id="f-prov"><option value="">Semua</option></select>
+    </div>
+    <div class="capsule">
+      <label for="f-kota">Kota Minat</label><span class="cap-value" id="val-kota"></span>
+      <select id="f-kota"><option value="">Semua</option></select>
+    </div>
   </section>
 
   <!-- PIE CHARTS -->
@@ -159,21 +189,21 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
     <div class="block">
       <div class="pies">
         <div class="pie-card">
-          <div class="pie-title">Sumber Informasi Lowongan</div>
+          <div class="pie-title">Sumber Informasi Lowongan — Top 5</div>
           <div class="pie-wrap"><canvas id="pie-info"></canvas></div>
         </div>
         <div class="pie-card">
-          <div class="pie-title">Pendidikan Terakhir</div>
+          <div class="pie-title">Pendidikan Terakhir — Top 5</div>
           <div class="pie-wrap"><canvas id="pie-pend"></canvas></div>
         </div>
         <div class="pie-card">
-          <div class="pie-title">Durasi Pengalaman Kerja</div>
+          <div class="pie-title">Durasi Pengalaman Kerja — Top 5</div>
           <div class="pie-wrap"><canvas id="pie-durasi"></canvas></div>
         </div>
       </div>
     </div>
 
-    <!-- pager tetap di bawah grafik -->
+    <!-- pager -->
     <div class="toolbar">
       <button id="prev" class="btn">Prev</button>
       <button id="next" class="btn">Next</button>
@@ -330,6 +360,27 @@ function rebuildOtherFiltersFromDate(){
   if(sets.kota .has(cur.kota )) $("#f-kota").value  = cur.kota;
 }
 
+/* ====== CAPSULE VALUE UI ====== */
+function updateCapsuleValues(){
+  const map = [
+    ['#f-year',  '#val-year'],
+    ['#f-month', '#val-month'],
+    ['#f-day',   '#val-day'],
+    ['#f-minat', '#val-minat'],
+    ['#f-peng',  '#val-peng'],
+    ['#f-pend',  '#val-pend'],
+    ['#f-prov',  '#val-prov'],
+    ['#f-kota',  '#val-kota'],
+  ];
+  map.forEach(([selId,valId])=>{
+    const sel = document.querySelector(selId);
+    const span = document.querySelector(valId);
+    if(!sel || !span) return;
+    const optText = sel.selectedIndex>0 ? sel.options[sel.selectedIndex].text : '';
+    span.textContent = optText; // akan hidden oleh :empty jika kosong
+  });
+}
+
 /* ====== TABLE RENDER ====== */
 function renderTable(rows){
   const start = page*PAGE_SIZE, slice = rows.slice(start, start+PAGE_SIZE);
@@ -353,28 +404,22 @@ function renderTable(rows){
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
 
-/* ====== PIE CHARTS ====== */
+/* ====== PIE CHARTS (Top 5) ====== */
 function palette(n){
   const out=[];
   for(let i=0;i<n;i++){
-    const hue = Math.round((i*360/n + 130) % 360); // sekitar hijau
+    const hue = Math.round((i*360/n + 130) % 360);
     out.push(`hsl(${hue} 45% 55%)`);
   }
   return out;
 }
-function groupCounts(rows, field){
+function groupTop5(rows, field){
   const m=new Map();
   rows.forEach(r=>{
     const v=String(get(r, field)||"").trim() || "Tidak diisi";
     m.set(v,(m.get(v)||0)+1);
   });
-  // Top 10 + Lainnya
-  const arr=[...m.entries()].sort((a,b)=>b[1]-a[1]);
-  if(arr.length<=10) return arr;
-  const top=arr.slice(0,10);
-  const rest=arr.slice(10).reduce((s,[_k,c])=>s+c,0);
-  top.push(["Lainnya", rest]);
-  return top;
+  return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5); // HANYA Top 5
 }
 const PieLabelPlugin = {
   id:'pieLabel',
@@ -391,7 +436,7 @@ const PieLabelPlugin = {
     meta.data.forEach((arc, i)=>{
       const v = data.datasets[0].data[i];
       const pct = v/total*100;
-      if(pct < 3) return; // kecil: jangan tampilkan biar tak berdesakan
+      if(pct < 3) return;
       const p = arc.tooltipPosition();
       ctx.fillText(`${pct.toFixed(0)}%`, p.x, p.y);
     });
@@ -401,7 +446,7 @@ const PieLabelPlugin = {
 let pieInfo, piePend, pieDurasi;
 function createPie(canvasId, rows, field){
   const ctx=document.getElementById(canvasId);
-  const arr=groupCounts(rows, field);
+  const arr=groupTop5(rows, field);
   const labels=arr.map(d=>d[0]);
   const data=arr.map(d=>d[1]);
   const colors=palette(labels.length);
@@ -429,7 +474,7 @@ function renderPies(rows){
 }
 
 /* ====== RECALC ====== */
-function recalc(){ const rows=filteredRows(); page=0; renderPies(rows); renderTable(rows); }
+function recalc(){ const rows=filteredRows(); page=0; renderPies(rows); renderTable(rows); updateCapsuleValues(); }
 
 /* ====== EVENTS ====== */
 document.addEventListener("change",(e)=>{
@@ -505,7 +550,7 @@ async function boot(){
     buildColumns();
     buildYearOptions();
     rebuildOtherFiltersFromDate();
-    recalc();
+    recalc();              // render + update capsule values
 
     hideLoader();
   }catch(err){
