@@ -11,58 +11,26 @@
 html,body{ width:100%; max-width:100%; overflow-x:hidden; }
 body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--ink); background:var(--bg) }
 
-/* ===== Loading Screen ===== */
-.loading-screen{
-  position:fixed; inset:0; z-index:9999;
-  background:#0f1720;
-  display:flex; align-items:center; justify-content:center; flex-direction:column;
-  gap:16px; padding:24px;
-}
-.loading-logo{
-  color:#E6EDF3; letter-spacing:.15em; text-transform:uppercase;
-  font-weight:800; font-size:clamp(26px,5vw,42px);
-  animation: blink 1.1s ease-in-out infinite;
-}
-.loading-sub{ color:#A7B2BD; font-size:14px; opacity:.9 }
-.loading-bar{
-  width:min(220px,60vw); height:4px; background:rgba(255,255,255,.16);
-  border-radius:9999px; overflow:hidden; position:relative;
-  box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;
-}
-.loading-bar::before{
-  content:""; position:absolute; inset:0;
-  width:40%; height:100%;
-  background:linear-gradient(90deg,#ffffff,#cfd8e3);
-  border-radius:inherit;
-  animation: load 1.2s cubic-bezier(.4,0,.2,1) infinite;
-}
-@keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.25} }
-@keyframes load{
-  0%{ transform:translateX(-100%) }
-  50%{ transform:translateX(30%) }
-  100%{ transform:translateX(200%) }
-}
-@media (prefers-reduced-motion: reduce){
-  .loading-logo{ animation:none }
-  .loading-bar::before{ animation:none; width:100% }
-}
-
-/* ===== App fade-in ===== */
-.app{ opacity:0; transform:translateY(8px); transition:opacity .35s ease, transform .35s ease; }
+/* Loading */
+.loading-screen{ position:fixed; inset:0; z-index:9999; background:#0f1720; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; padding:24px }
+.loading-logo{ color:#E6EDF3; letter-spacing:.15em; text-transform:uppercase; font-weight:800; font-size:clamp(26px,5vw,42px); animation:blink 1.1s ease-in-out infinite }
+.loading-sub{ color:#A7B2BD; font-size:14px; opacity:.9; text-align:center }
+.loading-bar{ width:min(220px,60vw); height:4px; background:rgba(255,255,255,.16); border-radius:9999px; overflow:hidden; position:relative; box-shadow:0 0 0 1px rgba(255,255,255,.06) inset }
+.loading-bar::before{ content:""; position:absolute; inset:0; width:40%; height:100%; background:linear-gradient(90deg,#ffffff,#cfd8e3); border-radius:inherit; animation:load 1.2s cubic-bezier(.4,0,.2,1) infinite }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes load{0%{transform:translateX(-100%)}50%{transform:translateX(30%)}100%{transform:translateX(200%)}}
+@media (prefers-reduced-motion:reduce){ .loading-logo{animation:none} .loading-bar::before{animation:none; width:100%} }
+.app{ opacity:0; transform:translateY(8px); transition:opacity .35s ease, transform .35s ease }
 body.ready .app{ opacity:1; transform:none }
 
-/* ===== Layout ===== */
-.container{ padding:0 16px; }
-
+/* Layout */
+.container{ padding:0 16px }
 .header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:20; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
 
 /* Filters */
 .filters{ padding:14px 0 6px; display:flex; flex-wrap:wrap; gap:12px; position:sticky; top:66px; z-index:19; background:var(--bg) }
-.capsule{
-  width:200px; background:var(--brand); color:#fff; border-radius:9999px; min-height:44px;
-  display:flex; align-items:center; gap:8px; padding:8px 12px; position:relative; box-shadow:0 1px 3px rgba(0,0,0,.08)
-}
+.capsule{ width:200px; background:var(--brand); color:#fff; border-radius:9999px; min-height:44px; display:flex; align-items:center; gap:8px; padding:8px 12px; position:relative; box-shadow:0 1px 3px rgba(0,0,0,.08) }
 .capsule label{ font-size:12px; font-weight:600; opacity:.95; white-space:nowrap }
 .capsule select{ flex:1; background:transparent; color:#fff; border:none; outline:none; font-weight:600; font-size:13px; appearance:none; padding-right:18px }
 .capsule::after{ content:""; position:absolute; right:12px; width:8px; height:8px; border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg); top:50%; margin-top:-6px }
@@ -83,11 +51,7 @@ body.ready .app{ opacity:1; transform:none }
 /* Table */
 .table-wrap{ padding:0 16px 16px; max-height:65vh; overflow:auto; background:#fff; max-width:100% }
 table{ width:100%; border-collapse:separate; border-spacing:0 }
-thead th{
-  position:sticky; top:0; z-index:2;
-  background:#f7f7f7; color:#1c1c1c; border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6;
-  text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap;
-}
+thead th{ position:sticky; top:0; z-index:2; background:#f7f7f7; color:#1c1c1c; border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6; text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap }
 tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top }
 
 /* Mobile */
@@ -102,7 +66,7 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 </head>
 <body>
 
-<!-- Loading overlay -->
+<!-- LOADER -->
 <div id="loader" class="loading-screen" aria-live="polite" aria-busy="true">
   <div class="loading-logo">THE PIPELINE</div>
   <div class="loading-bar" role="progressbar" aria-label="Memuat"></div>
@@ -153,8 +117,9 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
-/* ===== CONFIG ===== */
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv";
+/* ========= CONFIG ========= */
+const CSV_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub";
+const CSV_URL = `${CSV_URL_BASE}?gid=670178857&single=true&output=csv&cachebust=${Date.now()}`;
 const PAGE_SIZE = 100;
 const MONTH_NAMES = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
@@ -167,7 +132,7 @@ const DISPLAY_COLUMNS = [
 ];
 
 const FILTER_MAP = {
-  ts:   "TIMESTAMP",
+  ts:   "TIMESTAMP",                                 // kolom tanggal sumber
   minat:"MINAT POSISI KERJA PERTAMA",
   peng: "PENGALAMAN KERJA TERAKHIR",
   pend: "PENDIDIKAN TERAKHIR",
@@ -175,137 +140,89 @@ const FILTER_MAP = {
   kota: "KOTA MINAT PENEMPATAN"
 };
 
-/* ===== STATE ===== */
-let HEADER = [];
-let ALL = [];
+/* ========= STATE ========= */
+let HEADERS = [];              // header asli dari sheet
+let NAME_MAP = {};             // normalisasi header -> nama asli
+let ROWS = [];                 // array of objects
 let page = 0;
-let chart;
 
-/* ===== UTILS ===== */
+/* ========= HELPERS ========= */
 const $ = s => document.querySelector(s);
-function headerIndex(name){ return HEADER.indexOf(name); }
-function parseDateParts(s){
-  if(!s) return null;
-  let d = new Date(s);
-  if(!isNaN(d)) return { y:d.getFullYear(), m:d.getMonth()+1, d:d.getDate() };
-  const m = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-  if(m){
-    let a=+m[1], b=+m[2], y=+m[3]; if(y<100) y+=2000;
-    let day, month; if(a>12){ day=a; month=b; } else { month=a; day=b; }
-    return { y, m:month, d:day };
-  }
-  return null;
+const norm = s => String(s||"").toUpperCase().replace(/\s+/g," ").trim();
+const mapHeader = name => NAME_MAP[norm(name)] ?? name;
+const get = (row, label) => row[ mapHeader(label) ];
+
+function hideLoader(){
+  const el=$("#loader");
+  if(!el) return;
+  el.style.opacity="0";
+  el.style.transition="opacity .25s ease";
+  setTimeout(()=>{ el.style.display="none"; document.body.classList.add("ready"); }, 250);
 }
+function showLoaderError(msg){
+  $("#loader-sub").textContent = msg || "Gagal memuat data. Pastikan link publish benar & bisa diakses publik.";
+}
+
 function uniqueNumbers(arr){ return [...new Set(arr)].sort((a,b)=>a-b); }
-
-/* ===== TABLE HEAD ===== */
-function buildColumns(){
-  const row = $("#thead-row"); row.innerHTML = "";
-  DISPLAY_COLUMNS.forEach(lab=>{
-    if(headerIndex(lab)!==-1){
-      const th=document.createElement("th"); th.textContent=lab; row.appendChild(th);
-    }
-  });
-}
-
-/* ===== DATE SUBSET ===== */
-function subsetByDate(){
-  const y = parseInt($("#f-year").value || "0", 10);
-  const m = parseInt($("#f-month").value || "0", 10);
-  const d = parseInt($("#f-day").value || "0", 10);
-  const idxTs = headerIndex(FILTER_MAP.ts);
-  return ALL.filter(r=>{
-    const p = parseDateParts(r[idxTs]);
-    if(!p) return false;
-    if(y && p.y!==y) return false;
-    if(m && p.m!==m) return false;
-    if(d && p.d!==d) return false;
-    return true;
-  });
-}
-
-/* ===== OTHER FILTERS ===== */
-function filteredRows(){
-  const base = subsetByDate();
-  const idx = {
-    minat: headerIndex(FILTER_MAP.minat),
-    peng:  headerIndex(FILTER_MAP.peng),
-    pend:  headerIndex(FILTER_MAP.pend),
-    prov:  headerIndex(FILTER_MAP.prov),
-    kota:  headerIndex(FILTER_MAP.kota)
-  };
-  const sel = {
-    minat: $("#f-minat").value,
-    peng:  $("#f-peng").value,
-    pend:  $("#f-pend").value,
-    prov:  $("#f-prov").value,
-    kota:  $("#f-kota").value
-  };
-  return base.filter(r=>{
-    if(sel.minat && String(r[idx.minat]||"").trim()!==sel.minat) return false;
-    if(sel.peng  && String(r[idx.peng ]||"").trim()!==sel.peng ) return false;
-    if(sel.pend  && String(r[idx.pend ]||"").trim()!==sel.pend ) return false;
-    if(sel.prov  && String(r[idx.prov ]||"").trim()!==sel.prov ) return false;
-    if(sel.kota  && String(r[idx.kota ]||"").trim()!==sel.kota ) return false;
-    return true;
-  });
-}
-
-/* ===== SELECT HELPERS ===== */
 function fillSelect(sel, values, placeholder, disable=false){
-  sel.innerHTML = "";
-  const base = document.createElement("option"); base.value=""; base.textContent=placeholder;
-  sel.appendChild(base);
-  values.forEach(v=>{
-    const o=document.createElement("option"); o.value=v.value; o.textContent=v.label ?? v.value; sel.appendChild(o);
-  });
+  sel.innerHTML=""; const base=document.createElement("option"); base.value=""; base.textContent=placeholder; sel.appendChild(base);
+  values.forEach(v=>{ const o=document.createElement("option"); o.value=v.value; o.textContent=v.label ?? v.value; sel.appendChild(o); });
   sel.disabled = disable;
 }
+
+/* ========= UI BUILDERS ========= */
+function buildColumns(){
+  const row = $("#thead-row"); row.innerHTML="";
+  DISPLAY_COLUMNS.forEach(label=>{
+    const th=document.createElement("th"); th.textContent=label; row.appendChild(th);
+  });
+}
+
 function buildYearOptions(){
-  const idxTs = headerIndex(FILTER_MAP.ts);
-  const years = uniqueNumbers(ALL.map(r=>parseDateParts(r[idxTs])?.y).filter(Boolean));
+  const years = uniqueNumbers( ROWS.map(r=>{
+    const s = get(r, FILTER_MAP.ts); if(!s) return null;
+    const d = new Date(s);
+    if(!isNaN(d)) return d.getFullYear();
+    const m = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if(m){ let y=+m[3]; if(y<100) y+=2000; return y; }
+    return null;
+  }).filter(Boolean) );
   fillSelect($("#f-year"), years.map(y=>({value:String(y), label:String(y)})), "Semua Tahun", years.length===0);
   fillSelect($("#f-month"), [], "Semua Bulan", true);
   fillSelect($("#f-day"), [], "Semua Tanggal", true);
 }
-function buildMonthOptions(){
-  const y = parseInt($("#f-year").value || "0", 10);
-  const idxTs = headerIndex(FILTER_MAP.ts);
-  const months = uniqueNumbers(
-    ALL.map(r=>parseDateParts(r[idxTs])).filter(p=>p && (!y || p.y===y)).map(p=>p.m)
-  );
-  fillSelect($("#f-month"), months.map(m=>({value:String(m), label:MONTH_NAMES[m-1]})), "Semua Bulan", months.length===0);
-  fillSelect($("#f-day"), [], "Semua Tanggal", true);
-}
-function buildDayOptions(){
+
+function subsetByDate(){
   const y = parseInt($("#f-year").value || "0", 10);
   const m = parseInt($("#f-month").value || "0", 10);
-  const idxTs = headerIndex(FILTER_MAP.ts);
-  const days = uniqueNumbers(
-    ALL.map(r=>parseDateParts(r[idxTs])).filter(p=>p && (!y || p.y===y) && (!m || p.m===m)).map(p=>p.d)
-  );
-  fillSelect($("#f-day"), days.map(d=>({value:String(d), label:String(d)})), "Semua Tanggal", days.length===0);
+  const d = parseInt($("#f-day").value || "0", 10);
+  return ROWS.filter(r=>{
+    const s = get(r, FILTER_MAP.ts); if(!s) return false;
+    let P = null; let date = new Date(s);
+    if(!isNaN(date)) P = {y:date.getFullYear(), m:date.getMonth()+1, d:date.getDate()};
+    else{
+      const mm = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+      if(mm){ let a=+mm[1], b=+mm[2], yy=+mm[3]; if(yy<100) yy+=2000; P = (a>12) ? {y:yy,m:b,d:a} : {y:yy,m:a,d:b}; }
+    }
+    if(!P) return false;
+    if(y && P.y!==y) return false;
+    if(m && P.m!==m) return false;
+    if(d && P.d!==d) return false;
+    return true;
+  });
 }
 
-/* Rebuild opsi filter lain berdasar subset tanggal */
 function rebuildOtherFiltersFromDate(){
   const base = subsetByDate();
-  const idx = {
-    minat: headerIndex(FILTER_MAP.minat),
-    peng:  headerIndex(FILTER_MAP.peng),
-    pend:  headerIndex(FILTER_MAP.pend),
-    prov:  headerIndex(FILTER_MAP.prov),
-    kota:  headerIndex(FILTER_MAP.kota)
-  };
-  const sets = {minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set()};
+  const sets = { minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set() };
   base.forEach(r=>{
-    sets.minat.add(String(r[idx.minat]||"").trim());
-    sets.peng .add(String(r[idx.peng ]||"").trim());
-    sets.pend .add(String(r[idx.pend ]||"").trim());
-    sets.prov .add(String(r[idx.prov ]||"").trim());
-    sets.kota .add(String(r[idx.kota ]||"").trim());
+    sets.minat.add(String(get(r,FILTER_MAP.minat)||"").trim());
+    sets.peng .add(String(get(r,FILTER_MAP.peng )||"").trim());
+    sets.pend .add(String(get(r,FILTER_MAP.pend )||"").trim());
+    sets.prov .add(String(get(r,FILTER_MAP.prov )||"").trim());
+    sets.kota .add(String(get(r,FILTER_MAP.kota )||"").trim());
   });
-  const toOps = set => [...set].filter(Boolean).sort().map(v=>({value:v, label:v}));
+  const toOps = set => [...set].filter(Boolean).sort().map(v=>({value:v,label:v}));
 
   const cur = { minat:$("#f-minat").value, peng:$("#f-peng").value, pend:$("#f-pend").value, prov:$("#f-prov").value, kota:$("#f-kota").value };
   fillSelect($("#f-minat"), toOps(sets.minat), "Semua");
@@ -320,20 +237,43 @@ function rebuildOtherFiltersFromDate(){
   if(sets.kota .has(cur.kota )) $("#f-kota").value  = cur.kota;
 }
 
-/* ===== RENDER ===== */
+function buildMonthOptions(){
+  const y = parseInt($("#f-year").value || "0", 10);
+  const months = uniqueNumbers(subsetByDate().map(r=>{
+    const s = get(r, FILTER_MAP.ts); const d = new Date(s);
+    if(!isNaN(d)) return d.getMonth()+1;
+    const mm = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if(mm){ let a=+mm[1], b=+mm[2]; return (a>12? b:a); }
+    return null;
+  }).filter(Boolean));
+  fillSelect($("#f-month"), months.map(m=>({value:String(m), label:MONTH_NAMES[m-1]})), "Semua Bulan", months.length===0);
+  fillSelect($("#f-day"), [], "Semua Tanggal", true);
+}
+
+function buildDayOptions(){
+  const days = uniqueNumbers(subsetByDate().map(r=>{
+    const s = get(r, FILTER_MAP.ts); const d = new Date(s);
+    if(!isNaN(d)) return d.getDate();
+    const mm = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if(mm){ let a=+mm[1], b=+mm[2]; return (a>12? a:b); }
+    return null;
+  }).filter(Boolean));
+  fillSelect($("#f-day"), days.map(d=>({value:String(d), label:String(d)})), "Semua Tanggal", days.length===0);
+}
+
+/* TABLE RENDER */
 function renderTable(rows){
   const start = page*PAGE_SIZE;
   const slice = rows.slice(start, start+PAGE_SIZE);
   const tbody = $("#tbody"); tbody.innerHTML = "";
   slice.forEach(r=>{
     const tr=document.createElement("tr");
-    DISPLAY_COLUMNS.forEach(lab=>{
-      const i=headerIndex(lab); if(i===-1) return;
+    DISPLAY_COLUMNS.forEach(label=>{
       const td=document.createElement("td");
-      const v=r[i]??"";
-      if(lab.toUpperCase().includes("UPLOAD") || lab.toUpperCase().includes("CV")){
+      const v = get(r, label) ?? "";
+      if(label.toUpperCase().includes("UPLOAD") || label.toUpperCase().includes("CV")){
         const s=String(v||""); td.innerHTML=s.startsWith("http")?`<a href="${s}" target="_blank" rel="noopener">Link CV</a>`:s;
-      } else td.textContent=v;
+      } else td.textContent = v;
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -345,23 +285,26 @@ function renderTable(rows){
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
 
-/* CHART + label angka */
+/* CHART + labels */
 const DataLabelPlugin = {
   id:'valueLabel',
   afterDatasetsDraw(chart){
     const {ctx}=chart; ctx.save(); ctx.fillStyle='#000'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.font='10px Montserrat';
-    chart.getDatasetMeta(0).data.forEach((bar,i)=>{ const v=chart.data.datasets[0].data[i]; if(v==null) return; const p=bar.tooltipPosition(); ctx.fillText(String(v), p.x, p.y-2); });
+    (chart.getDatasetMeta(0).data||[]).forEach((bar,i)=>{ const v=chart.data.datasets[0].data[i]; if(v==null) return; const p=bar.tooltipPosition(); ctx.fillText(String(v), p.x, p.y-2); });
     ctx.restore();
   }
 };
+let _chart;
 function renderChart(rows){
-  const idxKota = headerIndex("KOTA MINAT PENEMPATAN");
   const counts = new Map();
-  rows.forEach(r=>{ const k=String(r[idxKota]||"").trim(); if(!k) return; counts.set(k,(counts.get(k)||0)+1); });
+  rows.forEach(r=>{
+    const k = String(get(r, FILTER_MAP.kota)||"").trim(); if(!k) return;
+    counts.set(k,(counts.get(k)||0)+1);
+  });
   const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
   const labels=top.map(d=>d[0]); const data=top.map(d=>d[1]);
-  const ctx=document.getElementById("chart"); if(window.chart) window.chart.destroy();
-  window.chart=new Chart(ctx,{
+  const ctx=document.getElementById("chart"); if(_chart) _chart.destroy();
+  _chart=new Chart(ctx,{
     type:'bar',
     data:{ labels, datasets:[{ label:'Jumlah Pelamar', data, borderWidth:1, backgroundColor:'rgba(63,112,77,0.35)', borderColor:'#3F704D' }]},
     options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ display:false } } },
@@ -369,22 +312,10 @@ function renderChart(rows){
   });
 }
 
-/* ===== LOADER CONTROL ===== */
-function hideLoader(){
-  const el=$("#loader");
-  if(!el) return;
-  el.style.opacity="0";
-  el.style.transition="opacity .25s ease";
-  setTimeout(()=>{ el.style.display="none"; document.body.classList.add("ready"); }, 250);
-}
-function showLoaderError(msg){
-  $("#loader-sub").textContent = msg || "Gagal memuat data.";
-}
-
-/* ===== FLOW ===== */
+/* RECALC */
 function recalc(){ const rows=filteredRows(); page=0; renderChart(rows); renderTable(rows); }
 
-/* Events */
+/* EVENTS */
 document.addEventListener("change",(e)=>{
   if(e.target.matches("#f-year")){ buildMonthOptions(); rebuildOtherFiltersFromDate(); recalc(); }
   else if(e.target.matches("#f-month")){ buildDayOptions(); rebuildOtherFiltersFromDate(); recalc(); }
@@ -394,21 +325,58 @@ document.addEventListener("change",(e)=>{
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
 
-/* Boot */
-function boot(){
-  Papa.parse(CSV_URL,{
-    download:true, header:true, skipEmptyLines:"greedy", worker:true,
-    complete:(res)=>{
-      HEADER=res.meta.fields;
-      ALL=res.data.map(row=>HEADER.map(h=>row[h]??""));
-      buildColumns();
-      buildYearOptions();
-      rebuildOtherFiltersFromDate();
-      recalc();
-      hideLoader(); // hilangkan loading setelah render pertama
-    },
-    error:(err)=>{ console.error(err); showLoaderError("Gagal memuat data. Periksa koneksi atau status Publish to the web."); }
+/* ========= DATA LOADING (robust) ========= */
+async function loadViaPapa(url){
+  return new Promise((resolve,reject)=>{
+    Papa.parse(url,{
+      download:true, header:true, skipEmptyLines:"greedy", worker:true,
+      downloadRequestHeaders: { "Cache-Control":"no-cache" },
+      complete: res => resolve(res),
+      error: err => reject(err)
+    });
   });
+}
+async function loadViaFetch(url){
+  const r = await fetch(url, { cache:"no-store", redirect:"follow" });
+  const txt = await r.text();
+  return new Promise((resolve)=>{
+    const res = Papa.parse(txt,{ header:true, skipEmptyLines:"greedy" });
+    resolve(res);
+  });
+}
+
+async function boot(){
+  try{
+    let res;
+    try{
+      res = await loadViaPapa(CSV_URL);
+    }catch(e1){
+      // fallback ke fetch + parse string
+      res = await loadViaFetch(CSV_URL);
+    }
+
+    if(!res || !res.data){ throw new Error("CSV kosong / tidak terbaca"); }
+
+    // Simpan headers & map normalisasi
+    HEADERS = res.meta?.fields?.length ? res.meta.fields : Object.keys(res.data[0]||{});
+    NAME_MAP = {}; HEADERS.forEach(h=> NAME_MAP[norm(h)] = h);
+
+    // Data rows (object)
+    ROWS = res.data.filter(r=>Object.keys(r).length>0);
+
+    if(ROWS.length===0){ showLoaderError("Tidak ada data pada sheet tersebut."); hideLoader(); return; }
+
+    // Build UI pertama kali
+    buildColumns();
+    buildYearOptions();
+    rebuildOtherFiltersFromDate();
+    recalc();
+
+    hideLoader();
+  }catch(err){
+    console.error(err);
+    showLoaderError("Gagal memuat data. Cek: (1) link publish CSV benar, (2) akses publik, (3) gid sheet 'Responses'.");
+  }
 }
 boot();
 </script>
