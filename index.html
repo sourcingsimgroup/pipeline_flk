@@ -28,8 +28,7 @@ body.ready .app{ opacity:1; transform:none }
 .header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:20; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
 
-/* ===== Filters ===== */
-/* Desktop: grid 4x2, rata tengah */
+/* ===== Filters (grid 4x2) ===== */
 .filters{
   padding:14px 0 6px;
   display:grid;
@@ -43,12 +42,12 @@ body.ready .app{ opacity:1; transform:none }
   border-radius:9999px; min-height:44px; display:block; position:relative;
   box-shadow:0 1px 3px rgba(0,0,0,.08)
 }
-/* Label selalu terlihat sebagai judul filter */
+/* judul filter selalu terlihat */
 .capsule label{
   position:absolute; left:12px; right:28px; top:50%; transform:translateY(-50%);
   margin:0; color:#fff; font-size:12px; font-weight:800; letter-spacing:.02em; white-space:nowrap; pointer-events:none
 }
-/* Select transparan penuh area kapsul, tetap bisa diklik */
+/* select transparan full area */
 .capsule select{
   position:absolute; inset:0; width:100%; height:100%;
   background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none
@@ -63,9 +62,13 @@ body.ready .app{ opacity:1; transform:none }
 /* ===== Sections ===== */
 .section{ margin:12px 0 24px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; max-width:100% }
 .section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
+
+/* Pie grid */
 .block{ padding:12px 16px }
-/* tinggi kanvas disesuaikan; mobile di override */
-.block canvas{ display:block; max-width:100%; height:260px !important }
+.pies{ display:grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap:12px }
+.pie-card{ background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); padding:8px 8px 4px }
+.pie-title{ margin:6px 8px 0; font-size:13px; font-weight:700; color:#1d1d1d }
+.pie-wrap canvas{ width:100%; height:240px !important; display:block }
 
 /* ===== Pager ===== */
 .toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px; flex-wrap:wrap }
@@ -79,7 +82,7 @@ table{ width:100%; border-collapse:separate; border-spacing:0 }
 thead th{ position:sticky; top:0; z-index:2; background:#f7f7f7; color:#1c1c1c; border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6; text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap }
 tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top }
 
-/* ===== Mobile: tombol hamburger ===== */
+/* ===== Mobile (hamburger) ===== */
 .filter-toggle{ display:none; }
 
 @media (max-width:640px){
@@ -100,7 +103,6 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   .filter-toggle .bars > span{ top:5px }
   .filter-toggle .bars::after{ bottom:0 }
 
-  /* Drawer filter */
   .filters{
     position:relative; top:auto; background:#f7f7f7; border-radius:12px;
     padding:10px; box-shadow:0 6px 14px rgba(0,0,0,.08);
@@ -112,9 +114,11 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   }
   .filters.open{ max-height:1100px; opacity:1 }
 
-  .capsule{ width:100% }          /* full width */
+  .capsule{ width:100% }
   .capsule label{ display:block }  /* judul filter terlihat */
-  .block canvas{ height:220px !important } /* chart lebih pendek di HP */
+
+  .pies{ grid-template-columns:1fr }
+  .pie-wrap canvas{ height:220px !important }
 }
 </style>
 </head>
@@ -149,10 +153,27 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
     <div class="capsule"><label for="f-kota">Kota Minat</label><select id="f-kota"><option value="">Semua</option></select></div>
   </section>
 
-  <!-- CHART -->
+  <!-- PIE CHARTS -->
   <section class="section">
-    <div class="section-head">Distribusi Pelamar per Kota (Top 15)</div>
-    <div class="block"><canvas id="chart"></canvas></div>
+    <div class="section-head">Distribusi Pelamar (Pie)</div>
+    <div class="block">
+      <div class="pies">
+        <div class="pie-card">
+          <div class="pie-title">Sumber Informasi Lowongan</div>
+          <div class="pie-wrap"><canvas id="pie-info"></canvas></div>
+        </div>
+        <div class="pie-card">
+          <div class="pie-title">Pendidikan Terakhir</div>
+          <div class="pie-wrap"><canvas id="pie-pend"></canvas></div>
+        </div>
+        <div class="pie-card">
+          <div class="pie-title">Durasi Pengalaman Kerja</div>
+          <div class="pie-wrap"><canvas id="pie-durasi"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- pager tetap di bawah grafik -->
     <div class="toolbar">
       <button id="prev" class="btn">Prev</button>
       <button id="next" class="btn">Next</button>
@@ -183,7 +204,6 @@ const PROXY_CSV = "https://r.jina.ai/http://docs.google.com/spreadsheets/d/e/2PA
 const PROXY_PUBHTML = "https://r.jina.ai/http://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pubhtml?gid=670178857&single=true&widget=true&headers=true";
 
 const PAGE_SIZE = 100;
-const MONTH_NAMES = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 const DISPLAY_COLUMNS = [
   "TIMESTAMP","EMAIL AKTIF","SUMBER INFORMASI LOWONGAN","NAMA LENGKAP (SESUAI KTP)","TANGGAL LAHIR",
@@ -194,8 +214,14 @@ const DISPLAY_COLUMNS = [
 ];
 
 const FILTER_MAP = {
-  ts:"TIMESTAMP", minat:"MINAT POSISI KERJA PERTAMA", peng:"PENGALAMAN KERJA TERAKHIR",
-  pend:"PENDIDIKAN TERAKHIR", prov:"PROVINSI MINAT PENEMPATAN", kota:"KOTA MINAT PENEMPATAN"
+  ts:"TIMESTAMP",
+  sumber:"SUMBER INFORMASI LOWONGAN",
+  pend:"PENDIDIKAN TERAKHIR",
+  durasi:"DURASI PENGALAMAN KERJA",
+  minat:"MINAT POSISI KERJA PERTAMA",
+  peng:"PENGALAMAN KERJA TERAKHIR",
+  prov:"PROVINSI MINAT PENEMPATAN",
+  kota:"KOTA MINAT PENEMPATAN"
 };
 
 /* ====== STATE ====== */
@@ -209,7 +235,7 @@ const norm = s => String(s||"").toUpperCase().replace(/\s+/g," ").trim();
 const mapHeader = name => NAME_MAP[norm(name)] ?? name;
 const get = (row, label) => row[ mapHeader(label) ];
 
-/* UI helpers */
+/* Helpers */
 function hideLoader(){ const el=$("#loader"); if(!el) return; el.style.opacity="0"; el.style.transition="opacity .25s ease"; setTimeout(()=>{ el.style.display="none"; document.body.classList.add("ready"); }, 250); }
 function showLoaderError(msg){ $("#loader-sub").textContent = msg || "Gagal memuat data."; }
 function uniqueNumbers(arr){ return [...new Set(arr)].sort((a,b)=>a-b); }
@@ -225,7 +251,7 @@ function buildColumns(){
   DISPLAY_COLUMNS.forEach(label=>{ const th=document.createElement("th"); th.textContent=label; row.appendChild(th); });
 }
 
-/* DATE HELPERS */
+/* DATE options & filtering */
 function parseDateParts(s){
   if(!s) return null;
   const d = new Date(s);
@@ -258,6 +284,7 @@ function subsetByDate(){
 }
 function buildMonthOptions(){
   const months = uniqueNumbers( subsetByDate().map(r=>parseDateParts(get(r,FILTER_MAP.ts))?.m).filter(Boolean) );
+  const MONTH_NAMES = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
   fillSelect($("#f-month"), months.map(m=>({value:String(m), label:MONTH_NAMES[m-1]})), "Semua Bulan", months.length===0);
   fillSelect($("#f-day"), [], "Semua Tanggal", true);
 }
@@ -326,83 +353,83 @@ function renderTable(rows){
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
 
-/* ====== Chart + label angka & nama area vertikal ====== */
-const BarLabelsPlugin = {
-  id:'barLabels',
+/* ====== PIE CHARTS ====== */
+function palette(n){
+  const out=[];
+  for(let i=0;i<n;i++){
+    const hue = Math.round((i*360/n + 130) % 360); // sekitar hijau
+    out.push(`hsl(${hue} 45% 55%)`);
+  }
+  return out;
+}
+function groupCounts(rows, field){
+  const m=new Map();
+  rows.forEach(r=>{
+    const v=String(get(r, field)||"").trim() || "Tidak diisi";
+    m.set(v,(m.get(v)||0)+1);
+  });
+  // Top 10 + Lainnya
+  const arr=[...m.entries()].sort((a,b)=>b[1]-a[1]);
+  if(arr.length<=10) return arr;
+  const top=arr.slice(0,10);
+  const rest=arr.slice(10).reduce((s,[_k,c])=>s+c,0);
+  top.push(["Lainnya", rest]);
+  return top;
+}
+const PieLabelPlugin = {
+  id:'pieLabel',
   afterDatasetsDraw(chart){
-    const {ctx, data, scales} = chart;
-    const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const valueFont = `${isMobile?9:10}px Montserrat`;
-    const nameFont  = `${isMobile?8:9}px Montserrat`;
-
-    ctx.save();
-
-    // angka kecil di atas bar
-    ctx.fillStyle = '#000';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.font = valueFont;
-
+    const {ctx, data} = chart;
+    const total = data.datasets[0].data.reduce((a,b)=>a+b,0) || 1;
     const meta = chart.getDatasetMeta(0);
-    (meta.data||[]).forEach((bar,i)=>{
+    ctx.save();
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    ctx.font = `${isMobile?10:11}px Montserrat`;
+    ctx.fillStyle = '#111';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    meta.data.forEach((arc, i)=>{
       const v = data.datasets[0].data[i];
-      if(v==null) return;
-      const p = bar.tooltipPosition();
-      ctx.fillText(String(v), p.x, p.y-2);
+      const pct = v/total*100;
+      if(pct < 3) return; // kecil: jangan tampilkan biar tak berdesakan
+      const p = arc.tooltipPosition();
+      ctx.fillText(`${pct.toFixed(0)}%`, p.x, p.y);
     });
-
-    // nama area vertikal di dalam bar (rotate -90deg)
-    (meta.data||[]).forEach((bar,i)=>{
-      const name = String(data.labels[i] ?? '');
-      if(!name) return;
-
-      const x = bar.x;
-      const bottom = scales.y.bottom;
-      const y = bottom - 6; // mulai dekat dasar bar, lalu tulisan naik (karena rotate)
-
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(-Math.PI/2);
-      ctx.fillStyle = '#000';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.font = nameFont;
-
-      // batas panjang supaya tidak terlalu panjang (khusus bar pendek)
-      const maxChars = isMobile ? 14 : 18;
-      const text = name.length>maxChars ? name.slice(0,maxChars-1)+'…' : name;
-
-      ctx.fillText(text, 0, 0);
-      ctx.restore();
-    });
-
     ctx.restore();
   }
 };
-let _chart;
-function renderChart(rows){
-  const counts=new Map();
-  rows.forEach(r=>{ const k=String(get(r,FILTER_MAP.kota)||"").trim(); if(!k) return; counts.set(k,(counts.get(k)||0)+1); });
-  const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
-  const labels=top.map(d=>d[0]), data=top.map(d=>d[1]);
-  const ctx=document.getElementById("chart"); if(_chart) _chart.destroy();
-  _chart=new Chart(ctx,{
-    type:'bar',
-    data:{ labels, datasets:[{ label:'Jumlah Pelamar', data, borderWidth:1, backgroundColor:'rgba(63,112,77,0.35)', borderColor:'#3F704D', categoryPercentage:0.8, barPercentage:0.9 }]},
+let pieInfo, piePend, pieDurasi;
+function createPie(canvasId, rows, field){
+  const ctx=document.getElementById(canvasId);
+  const arr=groupCounts(rows, field);
+  const labels=arr.map(d=>d[0]);
+  const data=arr.map(d=>d[1]);
+  const colors=palette(labels.length);
+  const chart=new Chart(ctx,{
+    type:'pie',
+    data:{ labels, datasets:[{ data, backgroundColor:colors, borderColor:'#fff', borderWidth:2 }]},
     options:{
       responsive:true, maintainAspectRatio:false,
-      scales:{
-        x:{ ticks:{ display:false }, grid:{ display:false } }, /* sembunyikan label bawah */
-        y:{ beginAtZero:true, ticks:{ precision:0, font:{ size:10 } } }
-      },
-      plugins:{ legend:{ display:false } }
+      plugins:{
+        legend:{ position:'bottom', labels:{ boxWidth:10, usePointStyle:true, pointStyle:'circle', font:{ size:11 } } },
+        tooltip:{ callbacks:{ label:(c)=>`${c.label}: ${c.parsed} (${Math.round(c.parsed/data.reduce((a,b)=>a+b,0)*100)}%)` } }
+      }
     },
-    plugins:[BarLabelsPlugin]
+    plugins:[PieLabelPlugin]
   });
+  return chart;
+}
+function renderPies(rows){
+  if(pieInfo) pieInfo.destroy();
+  if(piePend) piePend.destroy();
+  if(pieDurasi) pieDurasi.destroy();
+  pieInfo   = createPie('pie-info', rows, FILTER_MAP.sumber);
+  piePend   = createPie('pie-pend', rows, FILTER_MAP.pend);
+  pieDurasi = createPie('pie-durasi', rows, FILTER_MAP.durasi);
 }
 
 /* ====== RECALC ====== */
-function recalc(){ const rows=filteredRows(); page=0; renderChart(rows); renderTable(rows); }
+function recalc(){ const rows=filteredRows(); page=0; renderPies(rows); renderTable(rows); }
 
 /* ====== EVENTS ====== */
 document.addEventListener("change",(e)=>{
@@ -433,7 +460,7 @@ document.addEventListener('change', (e) => {
   }
 });
 
-/* ====== LOADERS ====== */
+/* ====== LOADING DATA (CSV → proxy → pubhtml) ====== */
 async function papaUrl(url){
   return new Promise((resolve,reject)=>{
     Papa.parse(url,{download:true,header:true,skipEmptyLines:"greedy",worker:false,complete:res=>resolve(res),error:err=>reject(err)});
@@ -462,24 +489,17 @@ async function parsePubhtmlToRows(html){
 async function boot(){
   try{
     let result = null;
-    // 1) CSV publish langsung
     try{ result = normalize(await papaUrl(`${PUB_CSV}&_=${Date.now()}`)); }
     catch(e1){
-      // 2) CSV via proxy
       try{ result = normalize(await papaUrl(`${PROXY_CSV}&_=${Date.now()}`)); }
       catch(e2){
-        // 3) PUBHTML via proxy -> parse tabel
         const html = await fetchText(`${PROXY_PUBHTML}&_=${Date.now()}`);
         const parsed = await parsePubhtmlToRows(html);
         result = { fields: parsed.headers, NAME_MAP:{}, rows: parsed.rows };
         result.fields.forEach(h=> result.NAME_MAP[norm(h)] = h);
       }
     }
-
-    HEADERS = result.fields;
-    NAME_MAP = result.NAME_MAP;
-    ROWS    = result.rows;
-
+    HEADERS = result.fields; NAME_MAP = result.NAME_MAP; ROWS = result.rows;
     if(!ROWS.length){ showLoaderError("Tidak ada data pada sheet tersebut."); hideLoader(); return; }
 
     buildColumns();
@@ -490,7 +510,7 @@ async function boot(){
     hideLoader();
   }catch(err){
     console.error(err);
-    showLoaderError("Gagal memuat data. Buka Console untuk detail error jika perlu.");
+    showLoaderError("Gagal memuat data. Cek Console untuk detail error.");
   }
 }
 boot();
