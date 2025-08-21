@@ -10,58 +10,59 @@
 *{ box-sizing:border-box }
 body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--ink); background:var(--bg); }
 
-/* Header */
-.header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:10; box-shadow:0 2px 6px rgba(0,0,0,.08) }
+/* Header (tetap) */
+.header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:20; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
 
-/* Filters – fixed capsule width (precise) */
-.filters{
-  padding:14px 16px 6px;
-  display:flex; flex-wrap:wrap; gap:12px;
-}
+/* Filters – capsule 200px, rapi */
+.filters{ padding:14px 16px 6px; display:flex; flex-wrap:wrap; gap:12px; position:sticky; top:66px; z-index:19; background:var(--bg) }
 .capsule{
-  width:260px;                      /* presisi & tidak kepanjangan */
-  background:var(--brand); color:#fff;
-  border-radius:9999px; min-height:46px;
+  width:200px; background:var(--brand); color:#fff;
+  border-radius:9999px; min-height:44px;
   display:flex; align-items:center; gap:8px;
-  padding:8px 12px; position:relative;
-  box-shadow:0 1px 3px rgba(0,0,0,.08)
+  padding:8px 12px; position:relative; box-shadow:0 1px 3px rgba(0,0,0,.08)
 }
 .capsule label{ font-size:12px; font-weight:600; opacity:.95; white-space:nowrap }
-.capsule select{
-  flex:1; background:transparent; color:#fff;
-  border:none; outline:none; font-weight:600; font-size:13px;
-  appearance:none; padding-right:18px
-}
-.capsule::after{
-  content:""; position:absolute; right:12px; width:8px; height:8px;
-  border-right:2px solid #fff; border-bottom:2px solid #fff;
-  transform:rotate(45deg); top:50%; margin-top:-6px
-}
+.capsule select{ flex:1; background:transparent; color:#fff; border:none; outline:none; font-weight:600; font-size:13px; appearance:none; padding-right:18px }
+.capsule::after{ content:""; position:absolute; right:12px; width:8px; height:8px; border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg); top:50%; margin-top:-6px }
 .capsule option{ color:#000 }
 
-/* Pager */
-.toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 16px; color:#555; font-size:13px }
+/* Sections */
+.section{ margin:12px 16px 24px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden }
+.section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700; position:sticky; top:calc(66px + 68px); z-index:18 } /* freeze s/d header chart */
+.block{ padding:12px 16px }
+
+/* PAGER di bawah chart */
+.toolbar{ display:flex; align-items:center; justify-content:flex-start; gap:12px; padding:0 16px 8px; color:#555; font-size:13px }
 .btn{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; cursor:pointer }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
 .counter{ font-weight:600 }
 
-/* Sections & table */
-.section{ margin:12px 16px 32px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden }
-.section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
-.block{ padding:12px 16px }
-.table-wrap{ padding:12px 16px; overflow:auto }
+/* Table */
+.table-section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700; position:sticky; top:calc(66px + 68px); z-index:18 } /* freeze s/d header tabel */
+.table-wrap{
+  padding:0 16px 16px;
+  /* HANYA isi tabel yang scroll */
+  max-height:60vh;           /* tinggi viewport tabel */
+  overflow:auto;             /* scroll di dalam kontainer */
+  background:#fff;
+}
 table{ width:100%; border-collapse:separate; border-spacing:0 }
-thead th{ position:sticky; top:0; background:#f7f7f7; z-index:1; text-align:left; padding:10px 8px; font-size:13px; border-bottom:2px solid #e6e6e6; white-space:nowrap }
+thead th{
+  position:sticky; top:0; background:#f7f7f7; z-index:1;
+  text-align:left; padding:10px 8px; font-size:13px; border-bottom:2px solid #e6e6e6; white-space:nowrap
+}
 tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top }
 
 /* Mobile */
 @media (max-width:640px){
-  .filters{ gap:10px; padding:12px 12px 4px }
-  .capsule{ width:100% }           /* full width di HP */
+  .filters{ gap:10px; top:60px }
+  .capsule{ width:100% }
   .capsule label{ display:none }
-  .section{ margin:10px 12px 24px }
-  .table-wrap{ padding:10px 12px }
+  .section{ margin:10px 12px 16px }
+  .block{ padding:10px 12px }
+  .table-wrap{ padding:0 12px 12px; max-height:65vh }
+  .section-head, .table-section-head{ top:calc(60px + 72px) }
 }
 </style>
 </head>
@@ -78,24 +79,21 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   <div class="capsule"><label for="f-kota">Kota Minat</label><select id="f-kota"><option value="">Semua</option></select></div>
 </section>
 
-<!-- PAGER -->
-<div class="toolbar">
-  <div>
-    <button id="prev" class="btn">Prev</button>
-    <button id="next" class="btn">Next</button>
-  </div>
-  <div>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</div>
-</div>
-
 <!-- CHART -->
 <section class="section">
   <div class="section-head">Distribusi Pelamar per Kota (Top 15)</div>
-  <div class="block"><canvas id="chart" height="140"></canvas></div>
+  <div class="block"><canvas id="chart" height="160"></canvas></div>
+  <!-- Pager pindah ke bawah chart -->
+  <div class="toolbar">
+    <button id="prev" class="btn">Prev</button>
+    <button id="next" class="btn">Next</button>
+    <span>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</span>
+  </div>
 </section>
 
-<!-- TABLE -->
+<!-- TABLE (hanya body yang scroll) -->
 <section class="section">
-  <div class="section-head">Tabel Data Pelamar</div>
+  <div class="table-section-head">Tabel Data Pelamar</div>
   <div class="table-wrap">
     <table id="grid">
       <thead><tr id="thead-row"></tr></thead>
@@ -132,55 +130,34 @@ const FILTER_MAP = {
 
 /* ===== STATE ===== */
 let HEADER = [];
-let ALL = [];       // semua row (array)
+let ALL = [];
 let page = 0;
 let chart;
 
 /* ===== UTILS ===== */
 const $ = s => document.querySelector(s);
-function ymd(val){
-  const d = new Date(val);
-  if(!isNaN(d)) return d.toISOString().slice(0,10);
-  return String(val||"").slice(0,10);
-}
+function ymd(val){ const d=new Date(val); return isNaN(d)? String(val||"").slice(0,10) : d.toISOString().slice(0,10); }
 function headerIndex(name){ return HEADER.indexOf(name); }
-function clearAndFillSelect(sel, values, keepLabel="Semua"){
-  sel.innerHTML = ""; 
-  const base = document.createElement("option"); base.value=""; base.textContent=keepLabel;
-  sel.appendChild(base);
-  values.forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=v; sel.appendChild(o); });
-}
-function uniqueSorted(iter){
-  return [...new Set([...iter].filter(Boolean))].sort();
-}
+function clearAndFillSelect(sel, values, base="Semua"){ sel.innerHTML=""; const o=document.createElement("option"); o.value=""; o.textContent=base; sel.appendChild(o); values.forEach(v=>{const n=document.createElement("option"); n.value=v; n.textContent=v; sel.appendChild(n);}); }
+function uniqueSorted(iter){ return [...new Set([...iter].filter(Boolean))].sort(); }
 
 /* ===== TABLE ===== */
 function buildColumns(){
   const row = $("#thead-row"); row.innerHTML = "";
   DISPLAY_COLUMNS.forEach(lab=>{
-    if(headerIndex(lab) !== -1){
-      const th = document.createElement("th");
-      th.textContent = lab; row.appendChild(th);
-    }
+    if(headerIndex(lab)!==-1){ const th=document.createElement("th"); th.textContent=lab; row.appendChild(th); }
   });
 }
 function filteredRows(){
   const idx = Object.fromEntries(Object.entries(FILTER_MAP).map(([k,v])=>[k,headerIndex(v)]));
-  const sel = {
-    tgl:  $("#f-tgl").value,
-    minat:$("#f-minat").value,
-    peng: $("#f-peng").value,
-    pend: $("#f-pend").value,
-    prov: $("#f-prov").value,
-    kota: $("#f-kota").value
-  };
+  const sel = { tgl:$("#f-tgl").value, minat:$("#f-minat").value, peng:$("#f-peng").value, pend:$("#f-pend").value, prov:$("#f-prov").value, kota:$("#f-kota").value };
   return ALL.filter(r=>{
-    if(sel.tgl   && ymd(r[idx.tgl])   !== sel.tgl) return false;
-    if(sel.minat && (r[idx.minat]||"").toString().trim() !== sel.minat) return false;
-    if(sel.peng  && (r[idx.peng]||"").toString().trim()  !== sel.peng)  return false;
-    if(sel.pend  && (r[idx.pend]||"").toString().trim()  !== sel.pend)  return false;
-    if(sel.prov  && (r[idx.prov]||"").toString().trim()  !== sel.prov)  return false;
-    if(sel.kota  && (r[idx.kota]||"").toString().trim()  !== sel.kota)  return false;
+    if(sel.tgl   && ymd(r[idx.tgl])!==sel.tgl) return false;
+    if(sel.minat && (r[idx.minat]||"").toString().trim()!==sel.minat) return false;
+    if(sel.peng  && (r[idx.peng]||"").toString().trim()!==sel.peng) return false;
+    if(sel.pend  && (r[idx.pend]||"").toString().trim()!==sel.pend) return false;
+    if(sel.prov  && (r[idx.prov]||"").toString().trim()!==sel.prov) return false;
+    if(sel.kota  && (r[idx.kota]||"").toString().trim()!==sel.kota) return false;
     return true;
   });
 }
@@ -188,56 +165,71 @@ function renderTable(rows){
   const start = page*PAGE_SIZE;
   const slice = rows.slice(start, start+PAGE_SIZE);
   const tbody = $("#tbody"); tbody.innerHTML = "";
-
   slice.forEach(r=>{
-    const tr = document.createElement("tr");
+    const tr=document.createElement("tr");
     DISPLAY_COLUMNS.forEach(lab=>{
-      const i = headerIndex(lab); if(i===-1) return;
-      const td = document.createElement("td");
-      const v = r[i] ?? "";
-      if (lab.toUpperCase().includes("UPLOAD") || lab.toUpperCase().includes("CV")){
-        const s = String(v||"");
-        td.innerHTML = s.startsWith("http") ? `<a href="${s}" target="_blank" rel="noopener">Link CV</a>` : s;
-      } else td.textContent = v;
+      const i=headerIndex(lab); if(i===-1) return;
+      const td=document.createElement("td");
+      const v=r[i]??"";
+      if(lab.toUpperCase().includes("UPLOAD") || lab.toUpperCase().includes("CV")){
+        const s=String(v||""); td.innerHTML=s.startsWith("http")?`<a href="${s}" target="_blank" rel="noopener">Link CV</a>`:s;
+      } else td.textContent=v;
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
   });
-
-  $("#pageNum").textContent = (page+1);
-  $("#pageCount").textContent = slice.length;
-  $("#totalCount").textContent = rows.length;
-  $("#prev").disabled = page<=0;
-  $("#next").disabled = (start + PAGE_SIZE) >= rows.length;
+  $("#pageNum").textContent=(page+1);
+  $("#pageCount").textContent=slice.length;
+  $("#totalCount").textContent=rows.length;
+  $("#prev").disabled=page<=0;
+  $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
 
-/* ===== CHART ===== */
+/* ===== CHART + DATALABELS ===== */
+const DataLabelPlugin = {
+  id: 'valueLabel',
+  afterDatasetsDraw(chart, args, pluginOptions){
+    const {ctx} = chart;
+    ctx.save();
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.font = '10px Montserrat';
+    const ds = chart.getDatasetMeta(0);
+    ds.data.forEach((bar, i)=>{
+      const val = chart.data.datasets[0].data[i];
+      if(val==null) return;
+      const p = bar.tooltipPosition();
+      ctx.fillText(val.toString(), p.x, p.y - 2);
+    });
+    ctx.restore();
+  }
+};
 function renderChart(rows){
   const idxKota = headerIndex("KOTA MINAT PENEMPATAN");
   const counts = new Map();
   rows.forEach(r=>{
-    const k = (r[idxKota]||"").toString().trim();
-    if(!k) return;
-    counts.set(k, (counts.get(k)||0)+1);
+    const k=(r[idxKota]||"").toString().trim(); if(!k) return;
+    counts.set(k,(counts.get(k)||0)+1);
   });
-  const top = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
-  const labels = top.map(d=>d[0]);
-  const data = top.map(d=>d[1]);
+  const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const labels=top.map(d=>d[0]);
+  const data=top.map(d=>d[1]);
 
-  const ctx = document.getElementById("chart");
+  const ctx=document.getElementById("chart");
   if(chart) chart.destroy();
-  chart = new Chart(ctx, {
+  chart=new Chart(ctx,{
     type:'bar',
     data:{ labels, datasets:[{ label:'Jumlah Pelamar', data, borderWidth:1, backgroundColor:'rgba(63,112,77,0.35)', borderColor:'#3F704D' }]},
-    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ display:false } } }
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ display:false } } },
+    plugins:[DataLabelPlugin]
   });
 }
 
-/* ===== FILTER OPTIONS ===== */
+/* ===== FILTER OPTIONS (cascading tanggal) ===== */
 function buildAllFilterOptionsFrom(rowsSource){
   const idx = Object.fromEntries(Object.entries(FILTER_MAP).map(([k,v])=>[k,headerIndex(v)]));
   const sets = { tgl:new Set(), minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set() };
-
   rowsSource.forEach(r=>{
     if(idx.tgl>-1)  sets.tgl.add( ymd(r[idx.tgl]) );
     if(idx.minat>-1)sets.minat.add( (r[idx.minat]||"").toString().trim() );
@@ -246,11 +238,7 @@ function buildAllFilterOptionsFrom(rowsSource){
     if(idx.prov>-1) sets.prov.add( (r[idx.prov]||"").toString().trim() );
     if(idx.kota>-1) sets.kota.add( (r[idx.kota]||"").toString().trim() );
   });
-
-  // Tanggal selalu dari seluruh data
   clearAndFillSelect($("#f-tgl"), uniqueSorted(sets.tgl), "Semua Tanggal");
-
-  // Lainnya mengikuti sumber (dipakai ALL saat awal, atau rows pada tanggal terpilih saat cascading)
   clearAndFillSelect($("#f-minat"), uniqueSorted(sets.minat), "Semua");
   clearAndFillSelect($("#f-peng"),  uniqueSorted(sets.peng),  "Semua");
   clearAndFillSelect($("#f-pend"),  uniqueSorted(sets.pend),  "Semua");
@@ -259,31 +247,14 @@ function buildAllFilterOptionsFrom(rowsSource){
 }
 
 /* ===== FLOW ===== */
-function recalc(){
-  const rows = filteredRows();
-  page = 0;
-  renderTable(rows);
-  renderChart(rows);
-}
-
-/* Cascading: saat tanggal berubah → rebuild opsi filter lain berdasarkan data pada tanggal itu */
+function recalc(){ const rows=filteredRows(); page=0; renderChart(rows); renderTable(rows); }
 function onDateChanged(){
-  const selDate = $("#f-tgl").value;
+  const selDate=$("#f-tgl").value;
   let source = ALL;
-  if(selDate){
-    const idxDate = headerIndex(FILTER_MAP.tgl);
-    source = ALL.filter(r => ymd(r[idxDate]) === selDate);
-  }
-
-  // Simpan pilihan saat ini
-  const cur = {
-    minat: $("#f-minat").value, peng: $("#f-peng").value, pend: $("#f-pend").value,
-    prov: $("#f-prov").value, kota: $("#f-kota").value
-  };
-
-  // Rebuild opsi (selain tanggal) dari sumber (tanggal terpilih)
+  if(selDate){ const idxDate=headerIndex(FILTER_MAP.tgl); source=ALL.filter(r=>ymd(r[idxDate])===selDate); }
+  // rebuild opsi lain berdasar tanggal
   const idx = Object.fromEntries(Object.entries(FILTER_MAP).map(([k,v])=>[k,headerIndex(v)]));
-  const sets = {minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set()};
+  const sets = { minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set() };
   source.forEach(r=>{
     sets.minat.add((r[idx.minat]||"").toString().trim());
     sets.peng.add((r[idx.peng]||"").toString().trim());
@@ -291,28 +262,17 @@ function onDateChanged(){
     sets.prov.add((r[idx.prov]||"").toString().trim());
     sets.kota.add((r[idx.kota]||"").toString().trim());
   });
-
-  const restoreIfValid = (sel, set) => {
-    clearAndFillSelect(sel, uniqueSorted(set), "Semua");
-    if(cur[sel.id.split('-')[1]] && set.has(cur[sel.id.split('-')[1]])){
-      sel.value = cur[sel.id.split('-')[1]]; // restore jika masih ada
-    } else {
-      sel.value = ""; // reset jika tidak valid
-    }
-  };
-
-  restoreIfValid($("#f-minat"), sets.minat);
-  restoreIfValid($("#f-peng"),  sets.peng);
-  restoreIfValid($("#f-pend"),  sets.pend);
-  restoreIfValid($("#f-prov"),  sets.prov);
-  restoreIfValid($("#f-kota"),  sets.kota);
-
+  clearAndFillSelect($("#f-minat"), uniqueSorted(sets.minat), "Semua");
+  clearAndFillSelect($("#f-peng"),  uniqueSorted(sets.peng),  "Semua");
+  clearAndFillSelect($("#f-pend"),  uniqueSorted(sets.pend),  "Semua");
+  clearAndFillSelect($("#f-prov"),  uniqueSorted(sets.prov),  "Semua");
+  clearAndFillSelect($("#f-kota"),  uniqueSorted(sets.kota),  "Semua");
   recalc();
 }
 
 /* Events */
 document.addEventListener("change",(e)=>{
-  if(e.target.matches("#f-tgl")){ onDateChanged(); return; }   // cascading dari tanggal
+  if(e.target.matches("#f-tgl")){ onDateChanged(); return; }
   if(e.target.matches("#f-minat,#f-peng,#f-pend,#f-prov,#f-kota")){ recalc(); }
 });
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
@@ -320,13 +280,12 @@ $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*P
 
 /* Boot */
 function boot(){
-  Papa.parse(CSV_URL, {
+  Papa.parse(CSV_URL,{
     download:true, header:true, skipEmptyLines:"greedy", worker:true,
     complete:(res)=>{
-      HEADER = res.meta.fields;
-      ALL = res.data.map(row => HEADER.map(h => row[h] ?? ""));
+      HEADER=res.meta.fields;
+      ALL=res.data.map(row=>HEADER.map(h=>row[h]??""));
       buildColumns();
-      // Inisialisasi: bangun semua opsi dari ALL (tanggal & yang lain)
       buildAllFilterOptionsFrom(ALL);
       recalc();
     },
