@@ -10,7 +10,8 @@
 *{ box-sizing:border-box }
 html,body{ width:100%; max-width:100%; overflow-x:hidden; }
 body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--ink); background:var(--bg) }
-/* Loading */
+
+/* ===== Loading ===== */
 .loading-screen{ position:fixed; inset:0; z-index:9999; background:#0f1720; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; padding:24px }
 .loading-logo{ color:#E6EDF3; letter-spacing:.15em; text-transform:uppercase; font-weight:800; font-size:clamp(26px,5vw,42px); animation:blink 1.1s ease-in-out infinite }
 .loading-sub{ color:#A7B2BD; font-size:14px; opacity:.9; text-align:center }
@@ -21,37 +22,72 @@ body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--i
 @media (prefers-reduced-motion:reduce){ .loading-logo{animation:none} .loading-bar::before{animation:none; width:100%} }
 .app{ opacity:0; transform:translateY(8px); transition:opacity .35s ease, transform .35s ease }
 body.ready .app{ opacity:1; transform:none }
-/* Layout */
+
+/* ===== Layout ===== */
 .container{ padding:0 16px }
 .header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:20; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
-/* Filters */
+
+/* ===== Filters (desktop default) ===== */
 .filters{ padding:14px 0 6px; display:flex; flex-wrap:wrap; gap:12px; position:sticky; top:66px; z-index:19; background:var(--bg) }
 .capsule{ width:200px; background:var(--brand); color:#fff; border-radius:9999px; min-height:44px; display:flex; align-items:center; gap:8px; padding:8px 12px; position:relative; box-shadow:0 1px 3px rgba(0,0,0,.08) }
 .capsule label{ font-size:12px; font-weight:600; opacity:.95; white-space:nowrap }
 .capsule select{ flex:1; background:transparent; color:#fff; border:none; outline:none; font-weight:600; font-size:13px; appearance:none; padding-right:18px }
 .capsule::after{ content:""; position:absolute; right:12px; width:8px; height:8px; border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg); top:50%; margin-top:-6px }
 .capsule option{ color:#000 }
-/* Sections */
+
+/* ===== Sections ===== */
 .section{ margin:12px 0 24px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; max-width:100% }
 .section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
 .block{ padding:12px 16px }
 .block canvas{ display:block; max-width:100% }
-/* Pager */
+
+/* ===== Pager (bawah chart) ===== */
 .toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px; flex-wrap:wrap }
 .btn{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; cursor:pointer }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
 .counter{ font-weight:600 }
-/* Table */
+
+/* ===== Table ===== */
 .table-wrap{ padding:0 16px 16px; max-height:65vh; overflow:auto; background:#fff; max-width:100% }
 table{ width:100%; border-collapse:separate; border-spacing:0 }
 thead th{ position:sticky; top:0; z-index:2; background:#f7f7f7; color:#1c1c1c; border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6; text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap }
 tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top }
-/* Mobile */
+
+/* ===== Mobile: tombol hamburger untuk filter ===== */
+.filter-toggle{ display:none; }
+
 @media (max-width:640px){
-  .filters{ gap:10px; top:60px }
+  .filter-toggle{
+    display:flex; align-items:center; gap:10px;
+    position:sticky; top:60px; z-index:21;
+    width:fit-content; padding:10px 14px;
+    background:var(--brand); color:#fff; border:none; border-radius:14px;
+    font-weight:700; letter-spacing:.02em; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12)
+  }
+  .filter-toggle .bars{ position:relative; width:18px; height:12px }
+  .filter-toggle .bars::before,
+  .filter-toggle .bars::after,
+  .filter-toggle .bars > span{
+    content:""; position:absolute; left:0; right:0; height:2px; background:#fff; border-radius:2px
+  }
+  .filter-toggle .bars::before{ top:0 }
+  .filter-toggle .bars > span{ top:5px }
+  .filter-toggle .bars::after{ bottom:0 }
+
+  /* Panel filter jadi drawer */
+  .filters{
+    position:relative; top:auto; background:#f7f7f7; border-radius:12px;
+    padding:10px; box-shadow:0 6px 14px rgba(0,0,0,.08);
+    max-height:0; overflow:hidden; opacity:0;
+    transition:max-height .28s ease, opacity .2s ease;
+    margin-top:8px;
+  }
+  .filters.open{ max-height:1100px; opacity:1 }
+
   .capsule{ width:100% }
   .capsule label{ display:none }
+
   .table-wrap{ max-height:68vh; padding:0 12px 12px }
   .block{ padding:10px 12px }
 }
@@ -69,8 +105,14 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 <header class="header"><h1 class="title">Pipeline Applicant FLK</h1></header>
 
 <main class="container app">
+  <!-- Tombol hamburger (muncul hanya di mobile) -->
+  <button id="filterToggle" class="filter-toggle" aria-controls="filters" aria-expanded="false" type="button">
+    <span class="bars"><span></span></span>
+    <span class="label">Filter</span>
+  </button>
+
   <!-- FILTERS: Tahun → Bulan → Tanggal -->
-  <section class="filters">
+  <section id="filters" class="filters">
     <div class="capsule"><label for="f-year">Tahun</label><select id="f-year"><option value="">Semua Tahun</option></select></div>
     <div class="capsule"><label for="f-month">Bulan</label><select id="f-month" disabled><option value="">Semua Bulan</option></select></div>
     <div class="capsule"><label for="f-day">Tanggal</label><select id="f-day" disabled><option value="">Semua Tanggal</option></select></div>
@@ -240,7 +282,6 @@ function rebuildOtherFiltersFromDate(){
 }
 
 /* RENDER */
-function buildColumns(){ const row=$("#thead-row"); row.innerHTML=""; DISPLAY_COLUMNS.forEach(l=>{ const th=document.createElement("th"); th.textContent=l; row.appendChild(th); }); }
 function renderTable(rows){
   const start = page*PAGE_SIZE, slice = rows.slice(start, start+PAGE_SIZE);
   const tbody = $("#tbody"); tbody.innerHTML = "";
@@ -274,7 +315,7 @@ function renderChart(rows){
 }
 function recalc(){ const rows=filteredRows(); page=0; renderChart(rows); renderTable(rows); }
 
-/* EVENTS */
+/* EVENTS: filter & pagination */
 document.addEventListener("change",(e)=>{
   if(e.target.matches("#f-year")){ buildMonthOptions(); rebuildOtherFiltersFromDate(); recalc(); }
   else if(e.target.matches("#f-month")){ buildDayOptions(); rebuildOtherFiltersFromDate(); recalc(); }
@@ -283,6 +324,25 @@ document.addEventListener("change",(e)=>{
 });
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
+
+/* MOBILE: toggle drawer filter */
+const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
+const filtersEl = document.getElementById('filters');
+const toggleBtn  = document.getElementById('filterToggle');
+if (toggleBtn && filtersEl) {
+  toggleBtn.addEventListener('click', () => {
+    const open = filtersEl.classList.toggle('open');
+    toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+document.addEventListener('change', (e) => {
+  if (isMobile() && e.target.closest('#filters')) {
+    setTimeout(() => {
+      filtersEl.classList.remove('open');
+      if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+    }, 80);
+  }
+});
 
 /* ====== LOADERS ====== */
 async function papaUrl(url){
@@ -322,7 +382,6 @@ async function boot(){
         // 3) PUBHTML via proxy -> parse tabel
         const html = await fetchText(`${PROXY_PUBHTML}&_=${Date.now()}`);
         const parsed = await parsePubhtmlToRows(html);
-        // samakan struktur result seperti Papa
         result = { fields: parsed.headers, NAME_MAP:{}, rows: parsed.rows };
         result.fields.forEach(h=> result.NAME_MAP[norm(h)] = h);
       }
@@ -342,7 +401,7 @@ async function boot(){
     hideLoader();
   }catch(err){
     console.error(err);
-    showLoaderError("Gagal memuat data. Jika masih muncul, kirim screenshot Console (DevTools) agar aku cek error spesifiknya.");
+    showLoaderError("Gagal memuat data. Buka Console untuk detail error jika perlu.");
   }
 }
 boot();
