@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Pipeline Applicant FLK</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{ --brand:#3F704D; --bg:#fff; --ink:#222; }
+*{ box-sizing:border-box }
+body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--ink); background:var(--bg); }
+.header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:10; box-shadow:0 2px 6px rgba(0,0,0,.08) }
+.title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
+
+.filters{ padding:14px 16px 6px; display:grid; grid-template-columns:repeat(12,1fr); gap:12px }
+.capsule{ grid-column:span 4; background:var(--brand); color:#fff; border-radius:9999px; min-height:48px; display:flex; align-items:center; gap:8px; padding:10px 14px; position:relative }
+.capsule label{ font-size:12px; font-weight:600; opacity:.95; white-space:nowrap }
+.capsule select{ flex:1; background:transparent; color:#fff; border:none; outline:none; font-weight:600; font-size:13px; appearance:none; padding-right:18px }
+.capsule::after{ content:""; position:absolute; right:14px; width:8px; height:8px; border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg); top:50%; margin-top:-6px }
+.capsule option{ color:#000 }
+
+.section{ margin:12px 16px 32px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden }
+.section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
+.table-wrap{ padding:12px 16px; overflow:auto }
+table{ width:100%; border-collapse:separate; border-spacing:0 }
+thead th{ position:sticky; top:0; background:#f7f7f7; z-index:1; text-align:left; padding:10px 8px; font-size:13px; border-bottom:2px solid #e6e6e6; white-space:nowrap }
+tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top }
+
+.toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 16px; color:#555; font-size:13px }
+.btn{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; cursor:pointer }
+.btn[disabled]{ opacity:.4; cursor:not-allowed }
+.counter{ font-weight:600 }
+
+@media (max-width:1100px){ .capsule{ grid-column:span 6 } }
+@media (max-width:640px){ .filters{ gap:10px; padding:12px 12px 4px } .capsule{ grid-column:span 12; min-height:46px } .capsule label{ display:none } .section{ margin:10px 12px 24px } .table-wrap{ padding:10px 12px } }
+</style>
+</head>
+<body>
+<header class="header"><h1 class="title">Pipeline Applicant FLK</h1></header>
+
+<!-- FILTERS -->
+<section class="filters">
+  <div class="capsule"><label for="f-tgl">Tanggal</label><select id="f-tgl"><option value="">Semua Tanggal</option></select></div>
+  <div class="capsule"><label for="f-minat">Minat Posisi</label><select id="f-minat"><option value="">Semua</option></select></div>
+  <div class="capsule"><label for="f-peng">Pengalaman Terakhir</label><select id="f-peng"><option value="">Semua</option></select></div>
+  <div class="capsule"><label for="f-pend">Pendidikan Terakhir</label><select id="f-pend"><option value="">Semua</option></select></div>
+  <div class="capsule"><label for="f-prov">Provinsi Minat</label><select id="f-prov"><option value="">Semua</option></select></div>
+  <div class="capsule"><label for="f-kota">Kota Minat</label><select id="f-kota"><option value="">Semua</option></select></div>
+</section>
+
+<!-- PAGER / STATUS -->
+<div class="toolbar">
+  <div>
+    <button id="prev" class="btn">Prev</button>
+    <button id="next" class="btn">Next</button>
+  </div>
+  <div>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</div>
+</div>
+
+<!-- TABLE -->
+<section class="section">
+  <div class="section-head">Tabel Data Pelamar</div>
+  <div class="table-wrap">
+    <table id="grid">
+      <thead><tr id="thead-row"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+/* ========= CONFIG ========= */
+const SHEET_ID   = "1cRKdIFwWuHauauIZsJ7_nrzSjygh7PCNhLFXuIm5b3g";
+const SHEET_NAME = "Responses";
+const PAGE_SIZE  = 100;
+
+// Kolom filter (huruf referensi gviz)
+const COL = {
+  TGL: "A",   // TIMESTAMP
+  PENG: "I",  // PENGALAMAN KERJA TERAKHIR
+  MINAT: "K", // MINAT POSISI KERJA (pertama)
+  PEND: "N",  // PENDIDIKAN TERAKHIR
+  PROV: "V",  // PROVINSI MINAT PENEMPATAN
+  KOTA: "W"   // KOTA MINAT PENEMPATAN
+};
+
+// Daftar kolom yang ingin ditampilkan (sesuai label header di sheet)
+const DISPLAY_COLUMNS = [
+  "TIMESTAMP",
+  "EMAIL AKTIF",
+  "SUMBER INFORMASI LOWONGAN",
+  "NAMA LENGKAP (SESUAI KTP)",
+  "TANGGAL LAHIR",
+  "NOMOR WA AKTIF",
+  "NOMOR HP AKTIF",
+  "JENIS KELAMIN",
+  "PENGALAMAN KERJA TERAKHIR",
+  "DURASI PENGALAMAN KERJA",
+  "MINAT POSISI KERJA PERTAMA",
+  "MINAT POSISI KERJA KEDUA",
+  "MINAT POSISI KERJA KETIGA",
+  "PENDIDIKAN TERAKHIR",
+  "NAMA SEKOLAH / NAMA UNIVERITAS",
+  "JURUSAN",
+  "KEPEMILIKAN KENDARAAN",
+  "KEPEMILIKAN SIM AKTIF",
+  "ALAMAT DOMISILI",
+  "KECAMATAN",
+  "KELURAHAN",
+  "PROVINSI MINAT PENEMPATAN",
+  "KOTA MINAT PENEMPATAN",
+  "UPLOAD CV"
+];
+
+/* ========= UTIL ========= */
+const $ = sel => document.querySelector(sel);
+function esc(str){ return String(str).replace(/'/g,"\\'"); }
+function gvizURL(tq){
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&tq=${encodeURIComponent(tq)}`;
+}
+function parseGvizJSON(text){
+  // gviz JSON diawali "google.visualization.Query.setResponse(...);"
+  const json = text.substring(text.indexOf("{"), text.lastIndexOf("}")+1);
+  return JSON.parse(json);
+}
+function ymd(d){ return d.toISOString().slice(0,10); }
+function dateRangeForKey(key){
+  const d = new Date(key);
+  if (isNaN(d)) return null;
+  const start = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0,0,0));
+  const end   = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()+1, 0,0,0));
+  const f = s => s.toISOString().replace(".000","").replace("Z","");
+  return {start: f(start), end: f(end)};
+}
+
+/* ========= STATE ========= */
+let page = 0;              // zero-based
+let totalRows = 0;
+let header = [];           // labels dari gviz
+let fieldIndex = {};       // label -> index di data
+let rows = [];             // baris aktif (halaman saat ini)
+
+/* ========= RENDER ========= */
+function renderHeader(){
+  const thead = $("#thead-row");
+  thead.innerHTML = "";
+  // Peta hanya kolom yang kita minta (urut sesuai DISPLAY_COLUMNS)
+  const cols = DISPLAY_COLUMNS.filter(lab => header.includes(lab));
+  cols.forEach(label=>{
+    const th = document.createElement("th");
+    th.textContent = label;
+    thead.appendChild(th);
+  });
+}
+function renderBody(){
+  const tbody = $("#tbody");
+  tbody.innerHTML = "";
+  const cols = DISPLAY_COLUMNS.filter(l => header.includes(l));
+  for (const r of rows){
+    const tr = document.createElement("tr");
+    cols.forEach(label=>{
+      const td = document.createElement("td");
+      const idx = fieldIndex[label];
+      let val = (r[idx] ?? "");
+      // Jika kolom upload CV berisi URL, buat link
+      if (label.toUpperCase().includes("UPLOAD") || label.toUpperCase().includes("CV")) {
+        const s = String(val||"");
+        if (s.startsWith("http")) {
+          td.innerHTML = `<a href="${s}" target="_blank" rel="noopener">Link CV</a>`;
+        } else {
+          td.textContent = s;
+        }
+      } else {
+        td.textContent = val;
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+}
+function updatePager(){
+  $("#pageNum").textContent = (page+1);
+  $("#pageCount").textContent = rows.length;
+  $("#totalCount").textContent = totalRows;
+  $("#prev").disabled = page<=0;
+  $("#next").disabled = ((page+1)*PAGE_SIZE) >= totalRows;
+}
+
+/* ========= QUERY BUILDER ========= */
+function buildWhere(){
+  const w = [];
+
+  // Tanggal (A) → gunakan rentang datetime di hari tsb
+  const key = $("#f-tgl").value;
+  if (key){
+    const dr = dateRangeForKey(key);
+    if (dr){
+      w.push(`(${COL.TGL} >= datetime '${dr.start}' and ${COL.TGL} < datetime '${dr.end}')`);
+    }
+  }
+
+  const minat = $("#f-minat").value;
+  if (minat) w.push(`${COL.MINAT} = '${esc(minat)}'`);
+
+  const peng = $("#f-peng").value;
+  if (peng)  w.push(`${COL.PENG} = '${esc(peng)}'`);
+
+  const pend = $("#f-pend").value;
+  if (pend)  w.push(`${COL.PEND} = '${esc(pend)}'`);
+
+  const prov = $("#f-prov").value;
+  if (prov)  w.push(`${COL.PROV} = '${esc(prov)}'`);
+
+  const kota = $("#f-kota").value;
+  if (kota)  w.push(`${COL.KOTA} = '${esc(kota)}'`);
+
+  return w.length ? (" where " + w.join(" and ")) : "";
+}
+
+/* ========= DATA FETCHERS ========= */
+// 1) Hitung total baris untuk kondisi saat ini
+async function fetchCount(){
+  const where = buildWhere();
+  const tq = `select count(${COL.TGL}) ${where}`;
+  const res = await fetch(gvizURL(tq));
+  const json = parseGvizJSON(await res.text());
+  const c = json.table.rows?.[0]?.c?.[0]?.v || 0;
+  return Number(c);
+}
+
+// 2) Ambil satu halaman data + header
+async function fetchPage(){
+  const where = buildWhere();
+  const off = page * PAGE_SIZE;
+  const tq = `select * ${where} limit ${PAGE_SIZE} offset ${off}`;
+  const res = await fetch(gvizURL(tq));
+  const json = parseGvizJSON(await res.text());
+
+  // Header labels
+  header = json.table.cols.map(c => c.label || c.id);
+  fieldIndex = {};
+  header.forEach((lab, i)=> fieldIndex[lab] = i);
+
+  // Rows flatten
+  rows = (json.table.rows || []).map(r => (r.c||[]).map(c => (c? (c.f ?? c.v) : "")));
+}
+
+// 3) Ambil nilai unik untuk dropdown (pakai GROUP BY per kolom)
+async function fetchDistinct(colLetter, isDate=false){
+  const tq = `select ${colLetter} where ${colLetter} is not null group by ${colLetter} order by ${colLetter}`;
+  const res = await fetch(gvizURL(tq));
+  const json = parseGvizJSON(await res.text());
+  const arr = (json.table.rows||[]).map(r => {
+    const cell = r.c?.[0];
+    // Tanggal: normalize ke YYYY-MM-DD
+    if (isDate && cell && cell.v){
+      const d = new Date(cell.v);
+      if (!isNaN(d)) return ymd(d);
+    }
+    return (cell?.f ?? cell?.v ?? "").toString();
+  }).filter(Boolean);
+  // Unique clean
+  return [...new Set(arr)];
+}
+function fillSelect(id, values){
+  const sel = $(id);
+  // keep first option
+  sel.length = 1;
+  const frag = document.createDocumentFragment();
+  values.forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = v;
+    frag.appendChild(opt);
+  });
+  sel.appendChild(frag);
+}
+
+/* ========= FLOW ========= */
+async function refresh(){
+  // 1) total count with current filters
+  totalRows = await fetchCount();
+  // keep page inside bounds
+  const maxPage = Math.max(0, Math.ceil(totalRows / PAGE_SIZE) - 1);
+  if (page > maxPage) page = maxPage;
+
+  // 2) fetch current page data
+  await fetchPage();
+
+  // 3) render
+  renderHeader();
+  renderBody();
+  updatePager();
+}
+
+async function boot(){
+  // Isi dropdown (distinct)
+  const [tgl, minat, peng, pend, prov, kota] = await Promise.all([
+    fetchDistinct(COL.TGL, true),
+    fetchDistinct(COL.MINAT),
+    fetchDistinct(COL.PENG),
+    fetchDistinct(COL.PEND),
+    fetchDistinct(COL.PROV),
+    fetchDistinct(COL.KOTA),
+  ]);
+  fillSelect("#f-tgl",  tgl);
+  fillSelect("#f-minat",minat);
+  fillSelect("#f-peng", peng);
+  fillSelect("#f-pend", pend);
+  fillSelect("#f-prov", prov);
+  fillSelect("#f-kota", kota);
+
+  await refresh();
+}
+
+/* ========= EVENTS ========= */
+["#f-tgl","#f-minat","#f-peng","#f-pend","#f-prov","#f-kota"].forEach(id=>{
+  document.addEventListener("change", async (e)=>{
+    if (e.target.matches(id)){
+      page = 0;       // reset ke halaman pertama kalau filter berubah
+      await refresh();
+    }
+  });
+});
+$("#prev").addEventListener("click", async ()=>{
+  if (page>0){ page--; await refresh(); }
+});
+$("#next").addEventListener("click", async ()=>{
+  if ((page+1)*PAGE_SIZE < totalRows){ page++; await refresh(); }
+});
+
+/* ========= START ========= */
+boot().catch(err=>{
+  console.error(err);
+  alert("Gagal memuat data. Pastikan file dapat diakses publik / sudah di-publish.");
+});
+</script>
+</body>
+</html>
