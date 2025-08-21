@@ -4,7 +4,6 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Pipeline Applicant FLK</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{ --brand:#3F704D; --bg:#fff; --ink:#222; }
@@ -56,7 +55,7 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   <div class="capsule"><label for="f-kota">Kota Minat</label><select id="f-kota"><option value="">Semua</option></select></div>
 </section>
 
-<!-- PAGER / STATUS -->
+<!-- PAGER -->
 <div class="toolbar">
   <div>
     <button id="prev" class="btn">Prev</button>
@@ -68,9 +67,7 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 <!-- CHART -->
 <section class="section">
   <div class="section-head">Distribusi Pelamar per Kota (Top 15)</div>
-  <div class="block">
-    <canvas id="chart" height="140"></canvas>
-  </div>
+  <div class="block"><canvas id="chart" height="140"></canvas></div>
 </section>
 
 <!-- TABLE -->
@@ -84,271 +81,190 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   </div>
 </section>
 
-<!-- Chart.js (CDN) -->
+<!-- Libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
-/* ========= CONFIG ========= */
-const SHEET_ID   = "1cRKdIFwWuHauauIZsJ7_nrzSjygh7PCNhLFXuIm5b3g";
-const SHEET_NAME = "Responses";
-const PAGE_SIZE  = 100;
+/* ===== CONFIG ===== */
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv";
+const PAGE_SIZE = 100;
 
-// Kolom filter (huruf referensi gviz)
-const COL = {
-  TGL: "A",   // TIMESTAMP
-  PENG: "I",  // PENGALAMAN KERJA TERAKHIR
-  MINAT: "K", // MINAT POSISI KERJA (pertama)
-  PEND: "N",  // PENDIDIKAN TERAKHIR
-  PROV: "V",  // PROVINSI MINAT PENEMPATAN
-  KOTA: "W"   // KOTA MINAT PENEMPATAN
-};
-
-// Daftar kolom yang ingin ditampilkan sesuai header di sheet
+// Nama kolom sesuai header di sheet (wajib sama persis)
 const DISPLAY_COLUMNS = [
-  "TIMESTAMP",
-  "EMAIL AKTIF",
-  "SUMBER INFORMASI LOWONGAN",
-  "NAMA LENGKAP (SESUAI KTP)",
-  "TANGGAL LAHIR",
-  "NOMOR WA AKTIF",
-  "NOMOR HP AKTIF",
-  "JENIS KELAMIN",
-  "PENGALAMAN KERJA TERAKHIR",
-  "DURASI PENGALAMAN KERJA",
-  "MINAT POSISI KERJA PERTAMA",
-  "MINAT POSISI KERJA KEDUA",
-  "MINAT POSISI KERJA KETIGA",
-  "PENDIDIKAN TERAKHIR",
-  "NAMA SEKOLAH / NAMA UNIVERITAS",
-  "JURUSAN",
-  "KEPEMILIKAN KENDARAAN",
-  "KEPEMILIKAN SIM AKTIF",
-  "ALAMAT DOMISILI",
-  "KECAMATAN",
-  "KELURAHAN",
-  "PROVINSI MINAT PENEMPATAN",
-  "KOTA MINAT PENEMPATAN",
-  "UPLOAD CV"
+  "TIMESTAMP","EMAIL AKTIF","SUMBER INFORMASI LOWONGAN","NAMA LENGKAP (SESUAI KTP)","TANGGAL LAHIR",
+  "NOMOR WA AKTIF","NOMOR HP AKTIF","JENIS KELAMIN","PENGALAMAN KERJA TERAKHIR","DURASI PENGALAMAN KERJA",
+  "MINAT POSISI KERJA PERTAMA","MINAT POSISI KERJA KEDUA","MINAT POSISI KERJA KETIGA","PENDIDIKAN TERAKHIR",
+  "NAMA SEKOLAH / NAMA UNIVERITAS","JURUSAN","KEPEMILIKAN KENDARAAN","KEPEMILIKAN SIM AKTIF",
+  "ALAMAT DOMISILI","KECAMATAN","KELURAHAN","PROVINSI MINAT PENEMPATAN","KOTA MINAT PENEMPATAN","UPLOAD CV"
 ];
 
-/* ========= UTIL ========= */
-const $ = sel => document.querySelector(sel);
-function esc(str){ return String(str).replace(/'/g,"\\'"); }
-function gvizURL(tq){
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&tq=${encodeURIComponent(tq)}`;
-}
-function parseGvizJSON(text){
-  const json = text.substring(text.indexOf("{"), text.lastIndexOf("}")+1);
-  return JSON.parse(json);
-}
-function ymd(d){ return d.toISOString().slice(0,10); }
-function dateRangeForKey(key){
-  const d = new Date(key);
-  if (isNaN(d)) return null;
-  const start = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0,0,0));
-  const end   = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()+1, 0,0,0));
-  const f = s => s.toISOString().replace(".000","").replace("Z","");
-  return {start: f(start), end: f(end)};
-}
+// Kolom untuk filter
+const FILTER_MAP = {
+  tgl:  "TIMESTAMP",                  // A
+  minat:"MINAT POSISI KERJA PERTAMA", // K
+  peng: "PENGALAMAN KERJA TERAKHIR",  // I
+  pend: "PENDIDIKAN TERAKHIR",        // N
+  prov: "PROVINSI MINAT PENEMPATAN",  // V
+  kota: "KOTA MINAT PENEMPATAN"       // W
+};
 
-/* ========= STATE ========= */
+/* ===== STATE ===== */
+let HEADER = [];
+let ALL = [];       // semua row (array of arrays)
 let page = 0;
-let totalRows = 0;
-let header = [];
-let fieldIndex = {};
-let rows = [];
-let chart; // Chart.js instance
+let chart;
 
-/* ========= RENDER TABLE ========= */
-function renderHeader(){
-  const thead = $("#thead-row");
-  thead.innerHTML = "";
-  const cols = DISPLAY_COLUMNS.filter(lab => header.includes(lab));
-  cols.forEach(label=>{
-    const th = document.createElement("th");
-    th.textContent = label;
-    thead.appendChild(th);
+/* ===== UTILS ===== */
+const $ = s => document.querySelector(s);
+function ymd(val){
+  const d = new Date(val);
+  if(!isNaN(d)) return d.toISOString().slice(0,10);
+  const m = String(val||"").slice(0,10);
+  return m;
+}
+function headerIndex(name){ return HEADER.indexOf(name); }
+function buildColumns(){
+  const row = $("#thead-row"); row.innerHTML = "";
+  DISPLAY_COLUMNS.forEach(lab=>{
+    if(headerIndex(lab) !== -1){
+      const th = document.createElement("th");
+      th.textContent = lab; row.appendChild(th);
+    } else {
+      console.warn("Kolom tidak ditemukan:", lab);
+    }
   });
 }
-function renderBody(){
-  const tbody = $("#tbody");
-  tbody.innerHTML = "";
-  const cols = DISPLAY_COLUMNS.filter(l => header.includes(l));
-  for (const r of rows){
+function buildFilterOptions(){
+  const set = {tgl:new Set(),minat:new Set(),peng:new Set(),pend:new Set(),prov:new Set(),kota:new Set()};
+  const idx = Object.fromEntries(Object.entries(FILTER_MAP).map(([k,v])=>[k,headerIndex(v)]));
+
+  ALL.forEach(r=>{
+    if(idx.tgl>-1)  set.tgl.add(ymd(r[idx.tgl]));
+    if(idx.minat>-1)set.minat.add((r[idx.minat]||"").toString().trim());
+    if(idx.peng>-1) set.peng.add((r[idx.peng]||"").toString().trim());
+    if(idx.pend>-1) set.pend.add((r[idx.pend]||"").toString().trim());
+    if(idx.prov>-1) set.prov.add((r[idx.prov]||"").toString().trim());
+    if(idx.kota>-1) set.kota.add((r[idx.kota]||"").toString().trim());
+  });
+
+  const fill = (id, arr)=>{
+    const sel = $(id); sel.length = 1;
+    [...arr].filter(Boolean).sort().forEach(v=>{
+      const o = document.createElement("option"); o.value=v; o.textContent=v; sel.appendChild(o);
+    });
+  };
+  fill("#f-tgl",  set.tgl);
+  fill("#f-minat",set.minat);
+  fill("#f-peng", set.peng);
+  fill("#f-pend", set.pend);
+  fill("#f-prov", set.prov);
+  fill("#f-kota", set.kota);
+}
+function applyFilters(){
+  const idx = Object.fromEntries(Object.entries(FILTER_MAP).map(([k,v])=>[k,headerIndex(v)]));
+  const sel = {
+    tgl:  $("#f-tgl").value,
+    minat:$("#f-minat").value,
+    peng: $("#f-peng").value,
+    pend: $("#f-pend").value,
+    prov: $("#f-prov").value,
+    kota: $("#f-kota").value
+  };
+  return ALL.filter(r=>{
+    if(sel.tgl   && ymd(r[idx.tgl])   !== sel.tgl) return false;
+    if(sel.minat && (r[idx.minat]||"").toString().trim() !== sel.minat) return false;
+    if(sel.peng  && (r[idx.peng]||"").toString().trim()  !== sel.peng)  return false;
+    if(sel.pend  && (r[idx.pend]||"").toString().trim()  !== sel.pend)  return false;
+    if(sel.prov  && (r[idx.prov]||"").toString().trim()  !== sel.prov)  return false;
+    if(sel.kota  && (r[idx.kota]||"").toString().trim()  !== sel.kota)  return false;
+    return true;
+  });
+}
+function renderTable(filtered){
+  const start = page*PAGE_SIZE;
+  const slice = filtered.slice(start, start+PAGE_SIZE);
+  const tbody = $("#tbody"); tbody.innerHTML = "";
+
+  DISPLAY_COLUMNS.forEach(lab=>{ if(headerIndex(lab)===-1) console.warn("Skip", lab); });
+
+  slice.forEach(r=>{
     const tr = document.createElement("tr");
-    cols.forEach(label=>{
+    DISPLAY_COLUMNS.forEach(lab=>{
+      const i = headerIndex(lab); if(i===-1) return;
       const td = document.createElement("td");
-      const idx = fieldIndex[label];
-      let val = (r[idx] ?? "");
-      if (label.toUpperCase().includes("UPLOAD") || label.toUpperCase().includes("CV")) {
-        const s = String(val||"");
-        if (s.startsWith("http")) td.innerHTML = `<a href="${s}" target="_blank" rel="noopener">Link CV</a>`;
-        else td.textContent = s;
-      } else td.textContent = val;
+      const v = r[i] ?? "";
+      if (lab.toUpperCase().includes("UPLOAD") || lab.toUpperCase().includes("CV")){
+        const s = String(v||"");
+        td.innerHTML = s.startsWith("http") ? `<a href="${s}" target="_blank" rel="noopener">Link CV</a>` : s;
+      } else td.textContent = v;
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
-  }
-}
-function updatePager(){
-  $("#pageNum").textContent = (page+1);
-  $("#pageCount").textContent = rows.length;
-  $("#totalCount").textContent = totalRows;
-  $("#prev").disabled = page<=0;
-  $("#next").disabled = ((page+1)*PAGE_SIZE) >= totalRows;
-}
-
-/* ========= WHERE BUILDER ========= */
-function buildWhere(){
-  const w = [];
-  const key = $("#f-tgl").value;
-  if (key){
-    const dr = dateRangeForKey(key);
-    if (dr){
-      w.push(`(${COL.TGL} >= datetime '${dr.start}' and ${COL.TGL} < datetime '${dr.end}')`);
-    }
-  }
-  const minat = $("#f-minat").value; if (minat) w.push(`${COL.MINAT} = '${esc(minat)}'`);
-  const peng  = $("#f-peng").value;  if (peng)  w.push(`${COL.PENG}  = '${esc(peng)}'`);
-  const pend  = $("#f-pend").value;  if (pend)  w.push(`${COL.PEND}  = '${esc(pend)}'`);
-  const prov  = $("#f-prov").value;  if (prov)  w.push(`${COL.PROV}  = '${esc(prov)}'`);
-  const kota  = $("#f-kota").value;  if (kota)  w.push(`${COL.KOTA}  = '${esc(kota)}'`);
-  return w.length ? (" where " + w.join(" and ")) : "";
-}
-
-/* ========= DATA FETCHERS ========= */
-async function fetchCount(){
-  const where = buildWhere();
-  const tq = `select count(${COL.TGL}) ${where}`;
-  const res = await fetch(gvizURL(tq));
-  const json = parseGvizJSON(await res.text());
-  return Number(json.table.rows?.[0]?.c?.[0]?.v || 0);
-}
-
-async function fetchPage(){
-  const where = buildWhere();
-  const off = page * PAGE_SIZE;
-  const tq = `select * ${where} limit ${PAGE_SIZE} offset ${off}`;
-  const res = await fetch(gvizURL(tq));
-  const json = parseGvizJSON(await res.text());
-  header = json.table.cols.map(c => c.label || c.id);
-  fieldIndex = {}; header.forEach((lab,i)=>fieldIndex[lab]=i);
-  rows = (json.table.rows||[]).map(r => (r.c||[]).map(c => (c? (c.f ?? c.v) : "")));
-}
-
-async function fetchDistinct(colLetter, isDate=false){
-  const tq = `select ${colLetter} where ${colLetter} is not null group by ${colLetter} order by ${colLetter}`;
-  const res = await fetch(gvizURL(tq));
-  const json = parseGvizJSON(await res.text());
-  const arr = (json.table.rows||[]).map(r => {
-    const cell = r.c?.[0];
-    if (isDate && cell && cell.v){
-      const d = new Date(cell.v);
-      if (!isNaN(d)) return ymd(d);
-    }
-    return (cell?.f ?? cell?.v ?? "").toString();
-  }).filter(Boolean);
-  return [...new Set(arr)];
-}
-
-// Grouped counts for chart (top N)
-async function fetchGroupedByKota(limit=15){
-  const where = buildWhere();
-  const tq = `select ${COL.KOTA}, count(${COL.TGL}) ${where} group by ${COL.KOTA} order by count(${COL.TGL}) desc limit ${limit}`;
-  const res = await fetch(gvizURL(tq));
-  const json = parseGvizJSON(await res.text());
-  const rows = (json.table.rows||[]).map(r => ({
-    label: r.c?.[0]?.v ?? r.c?.[0]?.f ?? "(Kosong)",
-    count: Number(r.c?.[1]?.v || 0)
-  }));
-  return rows.filter(d => d.label && d.count>0);
-}
-
-/* ========= CHART ========= */
-function ensureChart(data){
-  const ctx = document.getElementById("chart");
-  const labels = data.map(d=>d.label);
-  const counts = data.map(d=>d.count);
-
-  const cfg = {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Jumlah Pelamar',
-        data: counts,
-        borderWidth: 1,
-        backgroundColor: 'rgba(63,112,77,0.35)',
-        borderColor: '#3F704D'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: { ticks: { maxRotation: 45, minRotation: 0, autoSkip: true } },
-        y: { beginAtZero: true, ticks: { precision:0 } }
-      },
-      plugins: {
-        legend: { display:false },
-        tooltip: { mode:'index', intersect:false }
-      }
-    }
-  };
-
-  if (chart){ chart.destroy(); }
-  chart = new Chart(ctx, cfg);
-}
-
-/* ========= FLOW ========= */
-async function refresh(){
-  totalRows = await fetchCount();
-  const maxPage = Math.max(0, Math.ceil(totalRows / PAGE_SIZE) - 1);
-  if (page > maxPage) page = maxPage;
-
-  await Promise.all([fetchPage(), fetchGroupedByKota(15).then(ensureChart)]);
-  renderHeader(); renderBody(); updatePager();
-}
-
-async function boot(){
-  const [tgl, minat, peng, pend, prov, kota] = await Promise.all([
-    fetchDistinct(COL.TGL, true),
-    fetchDistinct(COL.MINAT),
-    fetchDistinct(COL.PENG),
-    fetchDistinct(COL.PEND),
-    fetchDistinct(COL.PROV),
-    fetchDistinct(COL.KOTA),
-  ]);
-  const fill = (id, arr) => {
-    const el = $(id); el.length = 1;
-    const frag = document.createDocumentFragment();
-    arr.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; frag.appendChild(o); });
-    el.appendChild(frag);
-  };
-  fill('#f-tgl', tgl);
-  fill('#f-minat', minat);
-  fill('#f-peng', peng);
-  fill('#f-pend', pend);
-  fill('#f-prov', prov);
-  fill('#f-kota', kota);
-
-  await refresh();
-}
-
-/* ========= EVENTS ========= */
-["#f-tgl","#f-minat","#f-peng","#f-pend","#f-prov","#f-kota"].forEach(id=>{
-  document.addEventListener("change", async (e)=>{
-    if (e.target.matches(id)){ page = 0; await refresh(); }
   });
-});
-$("#prev").addEventListener("click", async ()=>{ if (page>0){ page--; await refresh(); }});
-$("#next").addEventListener("click", async ()=>{ if ((page+1)*PAGE_SIZE < totalRows){ page++; await refresh(); }});
 
-/* ========= START ========= */
-boot().catch(err=>{
-  console.error(err);
-  alert("Gagal memuat data. Pastikan file dapat diakses publik / sudah di-publish.");
+  $("#pageNum").textContent = (page+1);
+  $("#pageCount").textContent = slice.length;
+  $("#totalCount").textContent = filtered.length;
+  $("#prev").disabled = page<=0;
+  $("#next").disabled = (start + PAGE_SIZE) >= filtered.length;
+}
+function renderChart(filtered){
+  const idxKota = headerIndex("KOTA MINAT PENEMPATAN");
+  const counts = new Map();
+  filtered.forEach(r=>{
+    const k = (r[idxKota]||"").toString().trim();
+    if(!k) return;
+    counts.set(k, (counts.get(k)||0)+1);
+  });
+  const top = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const labels = top.map(d=>d[0]);
+  const data = top.map(d=>d[1]);
+
+  const ctx = document.getElementById("chart");
+  if(chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Jumlah Pelamar', data, borderWidth:1, backgroundColor:'rgba(63,112,77,0.35)', borderColor:'#3F704D' }]},
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ display:false } } }
+  });
+}
+
+/* ===== FLOW ===== */
+function recalc(){
+  const filtered = applyFilters();
+  page = 0; // reset ketika filter berubah
+  renderTable(filtered);
+  renderChart(filtered);
+}
+
+document.addEventListener("change",(e)=>{
+  if(e.target.matches("#f-tgl,#f-minat,#f-peng,#f-pend,#f-prov,#f-kota")){
+    recalc();
+  }
 });
+$("#prev").addEventListener("click", ()=>{ const f=applyFilters(); if(page>0){ page--; renderTable(f);} });
+$("#next").addEventListener("click", ()=>{ const f=applyFilters(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
+
+function boot(){
+  Papa.parse(CSV_URL, {
+    download:true,
+    header:true,
+    skipEmptyLines:"greedy",
+    worker:true,
+    complete:(res)=>{
+      HEADER = res.meta.fields;
+      // Normalisasi: pastikan urutan kolom konsisten dengan header
+      ALL = res.data.map(row => HEADER.map(h => row[h] ?? ""));
+      buildColumns();
+      buildFilterOptions();
+      recalc();
+    },
+    error:(err)=>{ console.error(err); alert("Gagal memuat CSV publish. Periksa URL Publish to the web."); }
+  });
+}
+
+boot();
 </script>
 </body>
 </html>
