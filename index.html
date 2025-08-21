@@ -28,19 +28,41 @@ body.ready .app{ opacity:1; transform:none }
 .header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:20; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
 
-/* ===== Filters (desktop default) ===== */
-.filters{ padding:14px 0 6px; display:flex; flex-wrap:wrap; gap:12px; position:sticky; top:66px; z-index:19; background:var(--bg) }
-.capsule{ width:200px; background:var(--brand); color:#fff; border-radius:9999px; min-height:44px; display:flex; align-items:center; gap:8px; padding:8px 12px; position:relative; box-shadow:0 1px 3px rgba(0,0,0,.08) }
-.capsule label{ font-size:12px; font-weight:600; opacity:.95; white-space:nowrap }
-.capsule select{ flex:1; background:transparent; color:#fff; border:none; outline:none; font-weight:600; font-size:13px; appearance:none; padding-right:18px }
-.capsule::after{ content:""; position:absolute; right:12px; width:8px; height:8px; border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg); top:50%; margin-top:-6px }
-.capsule option{ color:#000 }
+/* ===== Filters ===== */
+/* Desktop: grid 4x2, rata tengah */
+.filters{
+  padding:14px 0 6px;
+  display:grid;
+  grid-template-columns: repeat(4, 200px);
+  gap:12px;
+  justify-content:center; /* rata tengah */
+  position:sticky; top:66px; z-index:19; background:var(--bg)
+}
+.capsule{
+  width:200px; background:var(--brand); color:#fff;
+  border-radius:9999px; min-height:44px; display:flex; align-items:center;
+  gap:8px; padding:8px 12px; position:relative; box-shadow:0 1px 3px rgba(0,0,0,.08)
+}
+.capsule label{ font-size:12px; font-weight:700; opacity:.95; white-space:nowrap }
+/* Sembunyikan teks nilai select (yang terlihat hanya judul/label) */
+.capsule select{
+  flex:1; background:transparent; border:none; outline:none; appearance:none;
+  color:transparent; text-shadow:none; caret-color:transparent; /* value hidden */
+  padding-right:18px; font-weight:600; font-size:13px;
+}
+.capsule::after{
+  content:""; position:absolute; right:12px; width:8px; height:8px;
+  border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg);
+  top:50%; margin-top:-6px
+}
+.capsule option{ color:#000 } /* di dalam dropdown tetap terbaca */
 
 /* ===== Sections ===== */
 .section{ margin:12px 0 24px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; max-width:100% }
 .section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
 .block{ padding:12px 16px }
-.block canvas{ display:block; max-width:100% }
+/* Perbesar kanvas agar label tidak menumpuk; override attribute height */
+.block canvas{ display:block; max-width:100%; height:260px !important }
 
 /* ===== Pager (bawah chart) ===== */
 .toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px; flex-wrap:wrap }
@@ -82,14 +104,15 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
     max-height:0; overflow:hidden; opacity:0;
     transition:max-height .28s ease, opacity .2s ease;
     margin-top:8px;
+
+    display:grid; grid-template-columns: 1fr; gap:10px; justify-items:stretch;
   }
   .filters.open{ max-height:1100px; opacity:1 }
 
+  /* Di mobile, label harus TAMPIL (judul filter), bukan value */
   .capsule{ width:100% }
-  .capsule label{ display:none }
-
-  .table-wrap{ max-height:68vh; padding:0 12px 12px }
-  .block{ padding:10px 12px }
+  .capsule label{ display:block }     /* tampilkan label */
+  .block canvas{ height:220px !important } /* chart lebih pendek */
 }
 </style>
 </head>
@@ -111,13 +134,13 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
     <span class="label">Filter</span>
   </button>
 
-  <!-- FILTERS: Tahun → Bulan → Tanggal -->
+  <!-- FILTERS: Tahun → Bulan → Tanggal (atas) + 4 filter lain (bawah) -->
   <section id="filters" class="filters">
     <div class="capsule"><label for="f-year">Tahun</label><select id="f-year"><option value="">Semua Tahun</option></select></div>
     <div class="capsule"><label for="f-month">Bulan</label><select id="f-month" disabled><option value="">Semua Bulan</option></select></div>
     <div class="capsule"><label for="f-day">Tanggal</label><select id="f-day" disabled><option value="">Semua Tanggal</option></select></div>
-
     <div class="capsule"><label for="f-minat">Minat Posisi</label><select id="f-minat"><option value="">Semua</option></select></div>
+
     <div class="capsule"><label for="f-peng">Pengalaman Terakhir</label><select id="f-peng"><option value="">Semua</option></select></div>
     <div class="capsule"><label for="f-pend">Pendidikan Terakhir</label><select id="f-pend"><option value="">Semua</option></select></div>
     <div class="capsule"><label for="f-prov">Provinsi Minat</label><select id="f-prov"><option value="">Semua</option></select></div>
@@ -127,7 +150,7 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   <!-- CHART -->
   <section class="section">
     <div class="section-head">Distribusi Pelamar per Kota (Top 15)</div>
-    <div class="block"><canvas id="chart" height="160"></canvas></div>
+    <div class="block"><canvas id="chart"></canvas></div>
     <div class="toolbar">
       <button id="prev" class="btn">Prev</button>
       <button id="next" class="btn">Next</button>
@@ -175,7 +198,7 @@ const FILTER_MAP = {
 
 /* ====== STATE ====== */
 let HEADERS = [];
-let NAME_MAP = {};    // normalized header -> real header
+let NAME_MAP = {};
 let ROWS = [];
 let page = 0;
 
@@ -244,10 +267,7 @@ function buildDayOptions(){
 /* FILTERED ROWS */
 function filteredRows(){
   const base = subsetByDate();
-  const sel = {
-    minat: $("#f-minat").value, peng: $("#f-peng").value, pend: $("#f-pend").value,
-    prov: $("#f-prov").value, kota: $("#f-kota").value
-  };
+  const sel = { minat:$("#f-minat").value, peng:$("#f-peng").value, pend:$("#f-pend").value, prov:$("#f-prov").value, kota:$("#f-kota").value };
   return base.filter(r=>{
     if(sel.minat && String(get(r,FILTER_MAP.minat)||"").trim()!==sel.minat) return false;
     if(sel.peng  && String(get(r,FILTER_MAP.peng )||"").trim()!==sel.peng ) return false;
@@ -303,6 +323,8 @@ function renderTable(rows){
   $("#prev").disabled=page<=0;
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
+
+/* Chart + label kecil + wrap */
 const DataLabelPlugin={id:'valueLabel',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.font='10px Montserrat';(chart.getDatasetMeta(0).data||[]).forEach((bar,i)=>{const v=chart.data.datasets[0].data[i];if(v==null)return;const p=bar.tooltipPosition();ctx.fillText(String(v),p.x,p.y-2);});ctx.restore();}};
 let _chart;
 function renderChart(rows){
@@ -311,7 +333,26 @@ function renderChart(rows){
   const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
   const labels=top.map(d=>d[0]), data=top.map(d=>d[1]);
   const ctx=document.getElementById("chart"); if(_chart) _chart.destroy();
-  _chart=new Chart(ctx,{ type:'bar', data:{labels,datasets:[{label:'Jumlah Pelamar',data,borderWidth:1,backgroundColor:'rgba(63,112,77,0.35)',borderColor:'#3F704D'}]}, options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0}}},plugins:{legend:{display:false}}}, plugins:[DataLabelPlugin] });
+  _chart=new Chart(ctx,{
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Jumlah Pelamar', data, borderWidth:1, backgroundColor:'rgba(63,112,77,0.35)', borderColor:'#3F704D', categoryPercentage:0.8, barPercentage:0.9 }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{
+        x:{
+          ticks:{
+            font:{ size:9 },
+            maxRotation:0,
+            autoSkip:false,
+            callback:function(v){ const lbl=this.getLabelForValue(v); return String(lbl).split(/\s+/); } /* wrap per spasi */
+          }
+        },
+        y:{ beginAtZero:true, ticks:{ precision:0, font:{ size:10 } } }
+      },
+      plugins:{ legend:{ display:false } }
+    },
+    plugins:[DataLabelPlugin]
+  });
 }
 function recalc(){ const rows=filteredRows(); page=0; renderChart(rows); renderTable(rows); }
 
@@ -325,7 +366,7 @@ document.addEventListener("change",(e)=>{
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
 
-/* MOBILE: toggle drawer filter */
+/* MOBILE: toggle drawer filter (judul filter terlihat) */
 const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
 const filtersEl = document.getElementById('filters');
 const toggleBtn  = document.getElementById('filterToggle');
