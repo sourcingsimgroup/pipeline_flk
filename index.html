@@ -8,14 +8,18 @@
 <style>
 :root{ --brand:#3F704D; --bg:#fff; --ink:#222; }
 *{ box-sizing:border-box }
+html,body{ width:100%; max-width:100%; overflow-x:hidden; }  /* cegah ruang kosong kanan */
 body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--ink); background:var(--bg) }
+
+/* Wrapper agar kiri–kanan konsisten */
+.container{ padding:0 16px; }
 
 /* Header (sticky) */
 .header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:20; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
 
 /* Filter capsules */
-.filters{ padding:14px 16px 6px; display:flex; flex-wrap:wrap; gap:12px; position:sticky; top:66px; z-index:19; background:var(--bg) }
+.filters{ padding:14px 0 6px; display:flex; flex-wrap:wrap; gap:12px; position:sticky; top:66px; z-index:19; background:var(--bg) }
 .capsule{
   width:200px; background:var(--brand); color:#fff;
   border-radius:9999px; min-height:44px;
@@ -28,19 +32,20 @@ body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--i
 .capsule option{ color:#000 }
 
 /* Card sections */
-.section{ margin:12px 16px 24px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden }
+.section{ margin:12px 0 24px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; max-width:100%; }
 .section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
 .block{ padding:12px 16px }
+.block canvas{ display:block; max-width:100%; } /* chart jangan melebar */
 
 /* Pager di bawah chart */
-.toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px }
+.toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px; flex-wrap:wrap }
 .btn{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; cursor:pointer }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
 .counter{ font-weight:600 }
 
 /* Tabel: header fit, body scroll */
-.table-wrap{ padding:0 16px 16px; max-height:65vh; overflow:auto; background:#fff }
-table{ width:100%; border-collapse:separate; border-spacing:0 }
+.table-wrap{ padding:0 16px 16px; max-height:65vh; overflow:auto; background:#fff; max-width:100%; }
+table{ width:100%; border-collapse:separate; border-spacing:0; }
 thead th{
   position:sticky; top:0; z-index:2;
   background:#f7f7f7; color:#1c1c1c;
@@ -55,49 +60,50 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   .filters{ gap:10px; top:60px }
   .capsule{ width:100% }
   .capsule label{ display:none }
-  .section{ margin:10px 12px 16px }
+  .table-wrap{ max-height:68vh; padding:0 12px 12px }
   .block{ padding:10px 12px }
-  .table-wrap{ padding:0 12px 12px; max-height:68vh }
 }
 </style>
 </head>
 <body>
 <header class="header"><h1 class="title">Pipeline Applicant FLK</h1></header>
 
-<!-- FILTERS (Tanggal bertingkat: Tahun → Bulan → Tanggal) -->
-<section class="filters">
-  <div class="capsule"><label for="f-year">Tahun</label><select id="f-year"><option value="">Semua Tahun</option></select></div>
-  <div class="capsule"><label for="f-month">Bulan</label><select id="f-month" disabled><option value="">Semua Bulan</option></select></div>
-  <div class="capsule"><label for="f-day">Tanggal</label><select id="f-day" disabled><option value="">Semua Tanggal</option></select></div>
+<main class="container">
+  <!-- FILTERS (Tanggal bertingkat: Tahun → Bulan → Tanggal) -->
+  <section class="filters">
+    <div class="capsule"><label for="f-year">Tahun</label><select id="f-year"><option value="">Semua Tahun</option></select></div>
+    <div class="capsule"><label for="f-month">Bulan</label><select id="f-month" disabled><option value="">Semua Bulan</option></select></div>
+    <div class="capsule"><label for="f-day">Tanggal</label><select id="f-day" disabled><option value="">Semua Tanggal</option></select></div>
 
-  <div class="capsule"><label for="f-minat">Minat Posisi</label><select id="f-minat"><option value="">Semua</option></select></div>
-  <div class="capsule"><label for="f-peng">Pengalaman Terakhir</label><select id="f-peng"><option value="">Semua</option></select></div>
-  <div class="capsule"><label for="f-pend">Pendidikan Terakhir</label><select id="f-pend"><option value="">Semua</option></select></div>
-  <div class="capsule"><label for="f-prov">Provinsi Minat</label><select id="f-prov"><option value="">Semua</option></select></div>
-  <div class="capsule"><label for="f-kota">Kota Minat</label><select id="f-kota"><option value="">Semua</option></select></div>
-</section>
+    <div class="capsule"><label for="f-minat">Minat Posisi</label><select id="f-minat"><option value="">Semua</option></select></div>
+    <div class="capsule"><label for="f-peng">Pengalaman Terakhir</label><select id="f-peng"><option value="">Semua</option></select></div>
+    <div class="capsule"><label for="f-pend">Pendidikan Terakhir</label><select id="f-pend"><option value="">Semua</option></select></div>
+    <div class="capsule"><label for="f-prov">Provinsi Minat</label><select id="f-prov"><option value="">Semua</option></select></div>
+    <div class="capsule"><label for="f-kota">Kota Minat</label><select id="f-kota"><option value="">Semua</option></select></div>
+  </section>
 
-<!-- CHART -->
-<section class="section">
-  <div class="section-head">Distribusi Pelamar per Kota (Top 15)</div>
-  <div class="block"><canvas id="chart" height="160"></canvas></div>
-  <div class="toolbar">
-    <button id="prev" class="btn">Prev</button>
-    <button id="next" class="btn">Next</button>
-    <span>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</span>
-  </div>
-</section>
+  <!-- CHART -->
+  <section class="section">
+    <div class="section-head">Distribusi Pelamar per Kota (Top 15)</div>
+    <div class="block"><canvas id="chart" height="160"></canvas></div>
+    <div class="toolbar">
+      <button id="prev" class="btn">Prev</button>
+      <button id="next" class="btn">Next</button>
+      <span>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</span>
+    </div>
+  </section>
 
-<!-- TABLE -->
-<section class="section">
-  <div class="section-head">Tabel Data Pelamar</div>
-  <div class="table-wrap">
-    <table id="grid">
-      <thead><tr id="thead-row"></tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-</section>
+  <!-- TABLE -->
+  <section class="section">
+    <div class="section-head">Tabel Data Pelamar</div>
+    <div class="table-wrap">
+      <table id="grid">
+        <thead><tr id="thead-row"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
 
 <!-- Libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -118,7 +124,7 @@ const DISPLAY_COLUMNS = [
 ];
 
 const FILTER_MAP = {
-  ts:   "TIMESTAMP",                         // tanggal sumber
+  ts:   "TIMESTAMP",
   minat:"MINAT POSISI KERJA PERTAMA",
   peng: "PENGALAMAN KERJA TERAKHIR",
   pend: "PENDIDIKAN TERAKHIR",
@@ -135,68 +141,47 @@ let chart;
 /* ====== UTILS ====== */
 const $ = s => document.querySelector(s);
 function headerIndex(name){ return HEADER.indexOf(name); }
-
-/* Robust parser untuk format timestamp campur (M/D/Y H:M:S atau D/M/Y) tanpa zona waktu */
 function parseDateParts(s){
   if(!s) return null;
-  // Try native Date
   let d = new Date(s);
   if(!isNaN(d)) return { y:d.getFullYear(), m:d.getMonth()+1, d:d.getDate() };
-
-  // Try regex "d/m/y" or "m/d/y"
   const m = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
   if(m){
-    let a = parseInt(m[1],10), b = parseInt(m[2],10), y = parseInt(m[3],10);
-    if(y < 100) y += 2000;
-    // Heuristic: jika a>12 → D/M/Y, else → M/D/Y
-    let day, month;
-    if(a>12){ day=a; month=b; } else { month=a; day=b; }
+    let a = +m[1], b = +m[2], y = +m[3]; if(y<100) y += 2000;
+    let day, month; if(a>12){ day=a; month=b; } else { month=a; day=b; }
     return { y, m:month, d:day };
   }
   return null;
 }
-function ymdKey(parts){
-  if(!parts) return "";
-  const mm = String(parts.m).padStart(2,"0");
-  const dd = String(parts.d).padStart(2,"0");
-  return `${parts.y}-${mm}-${dd}`;
-}
-function monthKey(parts){
-  if(!parts) return "";
-  const mm = String(parts.m).padStart(2,"0");
-  return `${parts.y}-${mm}`;
-}
+function uniqueNumbers(arr){ return [...new Set(arr)].sort((a,b)=>a-b); }
 
-/* ====== BUILD HEADERS/TABLE ====== */
+/* ====== BUILD TABLE HEAD ====== */
 function buildColumns(){
   const row = $("#thead-row"); row.innerHTML = "";
   DISPLAY_COLUMNS.forEach(lab=>{
     if(headerIndex(lab)!==-1){
-      const th=document.createElement("th");
-      th.textContent=lab;
-      row.appendChild(th);
+      const th=document.createElement("th"); th.textContent=lab; row.appendChild(th);
     }
   });
 }
 
-/* ====== DATE-DRIVEN SUBSET ====== */
+/* ====== DATE SUBSET ====== */
 function subsetByDate(){
   const y = parseInt($("#f-year").value || "0", 10);
   const m = parseInt($("#f-month").value || "0", 10);
   const d = parseInt($("#f-day").value || "0", 10);
   const idxTs = headerIndex(FILTER_MAP.ts);
-
   return ALL.filter(r=>{
     const p = parseDateParts(r[idxTs]);
     if(!p) return false;
-    if(y && p.y !== y) return false;
-    if(m && p.m !== m) return false;
-    if(d && p.d !== d) return false;
+    if(y && p.y!==y) return false;
+    if(m && p.m!==m) return false;
+    if(d && p.d!==d) return false;
     return true;
   });
 }
 
-/* ====== FILTERED ROWS (combine date + other filters) ====== */
+/* ====== OTHER FILTERS ====== */
 function filteredRows(){
   const base = subsetByDate();
   const idx = {
@@ -215,34 +200,28 @@ function filteredRows(){
   };
   return base.filter(r=>{
     if(sel.minat && String(r[idx.minat]||"").trim()!==sel.minat) return false;
-    if(sel.peng  && String(r[idx.peng] ||"").trim()!==sel.peng ) return false;
-    if(sel.pend  && String(r[idx.pend] ||"").trim()!==sel.pend ) return false;
-    if(sel.prov  && String(r[idx.prov] ||"").trim()!==sel.prov ) return false;
-    if(sel.kota  && String(r[idx.kota] ||"").trim()!==sel.kota ) return false;
+    if(sel.peng  && String(r[idx.peng ]||"").trim()!==sel.peng ) return false;
+    if(sel.pend  && String(r[idx.pend ]||"").trim()!==sel.pend ) return false;
+    if(sel.prov  && String(r[idx.prov ]||"").trim()!==sel.prov ) return false;
+    if(sel.kota  && String(r[idx.kota ]||"").trim()!==sel.kota ) return false;
     return true;
   });
 }
 
-/* ====== FILL SELECT HELPERS ====== */
+/* ====== SELECT HELPERS ====== */
 function fillSelect(sel, values, placeholder, disable=false){
   sel.innerHTML = "";
   const base = document.createElement("option"); base.value=""; base.textContent=placeholder;
   sel.appendChild(base);
   values.forEach(v=>{
-    const o=document.createElement("option");
-    o.value=v.value; o.textContent=v.label ?? v.value;
-    sel.appendChild(o);
+    const o=document.createElement("option"); o.value=v.value; o.textContent=v.label ?? v.value; sel.appendChild(o);
   });
   sel.disabled = disable;
 }
-function uniqueNumbers(arr){ return [...new Set(arr)].sort((a,b)=>a-b); }
-
-/* ====== BUILD DATE SELECTS (YEAR→MONTH→DAY) ====== */
 function buildYearOptions(){
   const idxTs = headerIndex(FILTER_MAP.ts);
   const years = uniqueNumbers(ALL.map(r=>parseDateParts(r[idxTs])?.y).filter(Boolean));
   fillSelect($("#f-year"), years.map(y=>({value:String(y), label:String(y)})), "Semua Tahun", years.length===0);
-  // reset children
   fillSelect($("#f-month"), [], "Semua Bulan", true);
   fillSelect($("#f-day"), [], "Semua Tanggal", true);
 }
@@ -250,16 +229,9 @@ function buildMonthOptions(){
   const y = parseInt($("#f-year").value || "0", 10);
   const idxTs = headerIndex(FILTER_MAP.ts);
   const months = uniqueNumbers(
-    ALL.map(r=>parseDateParts(r[idxTs]))
-       .filter(p=>p && (!y || p.y===y))
-       .map(p=>p.m)
+    ALL.map(r=>parseDateParts(r[idxTs])).filter(p=>p && (!y || p.y===y)).map(p=>p.m)
   );
-  fillSelect(
-    $("#f-month"),
-    months.map(m=>({value:String(m), label: MONTH_NAMES[m-1]})),
-    "Semua Bulan",
-    months.length===0
-  );
+  fillSelect($("#f-month"), months.map(m=>({value:String(m), label:MONTH_NAMES[m-1]})), "Semua Bulan", months.length===0);
   fillSelect($("#f-day"), [], "Semua Tanggal", true);
 }
 function buildDayOptions(){
@@ -267,19 +239,12 @@ function buildDayOptions(){
   const m = parseInt($("#f-month").value || "0", 10);
   const idxTs = headerIndex(FILTER_MAP.ts);
   const days = uniqueNumbers(
-    ALL.map(r=>parseDateParts(r[idxTs]))
-       .filter(p=>p && (!y || p.y===y) && (!m || p.m===m))
-       .map(p=>p.d)
+    ALL.map(r=>parseDateParts(r[idxTs])).filter(p=>p && (!y || p.y===y) && (!m || p.m===m)).map(p=>p.d)
   );
-  fillSelect(
-    $("#f-day"),
-    days.map(d=>({value:String(d), label:String(d)})),
-    "Semua Tanggal",
-    days.length===0
-  );
+  fillSelect($("#f-day"), days.map(d=>({value:String(d), label:String(d)})), "Semua Tanggal", days.length===0);
 }
 
-/* ====== BUILD OTHER FILTER OPTIONS (depend on date subset) ====== */
+/* rebuild opsi filter lain berdasar subset tanggal */
 function rebuildOtherFiltersFromDate(){
   const base = subsetByDate();
   const idx = {
@@ -289,31 +254,22 @@ function rebuildOtherFiltersFromDate(){
     prov:  headerIndex(FILTER_MAP.prov),
     kota:  headerIndex(FILTER_MAP.kota)
   };
-  const makeSet = k => uniqueNumbers([]) && null; // placeholder not used
-
-  const sets = {
-    minat: new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set()
-  };
+  const sets = {minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set()};
   base.forEach(r=>{
     sets.minat.add(String(r[idx.minat]||"").trim());
-    sets.peng.add (String(r[idx.peng ]||"").trim());
-    sets.pend.add (String(r[idx.pend ]||"").trim());
-    sets.prov.add (String(r[idx.prov ]||"").trim());
-    sets.kota.add (String(r[idx.kota ]||"").trim());
+    sets.peng .add(String(r[idx.peng ]||"").trim());
+    sets.pend .add(String(r[idx.pend ]||"").trim());
+    sets.prov .add(String(r[idx.prov ]||"").trim());
+    sets.kota .add(String(r[idx.kota ]||"").trim());
   });
+  const toOps = set => [...set].filter(Boolean).sort().map(v=>({value:v, label:v}));
 
-  const toOptions = set => [...set].filter(Boolean).sort().map(v=>({value:v, label:v}));
-
-  // Simpan pilihan saat ini
   const cur = { minat:$("#f-minat").value, peng:$("#f-peng").value, pend:$("#f-pend").value, prov:$("#f-prov").value, kota:$("#f-kota").value };
-
-  fillSelect($("#f-minat"), toOptions(sets.minat), "Semua");
-  fillSelect($("#f-peng"),  toOptions(sets.peng ), "Semua");
-  fillSelect($("#f-pend"),  toOptions(sets.pend ), "Semua");
-  fillSelect($("#f-prov"),  toOptions(sets.prov ), "Semua");
-  fillSelect($("#f-kota"),  toOptions(sets.kota ), "Semua");
-
-  // restore jika masih valid
+  fillSelect($("#f-minat"), toOps(sets.minat), "Semua");
+  fillSelect($("#f-peng"),  toOps(sets.peng ), "Semua");
+  fillSelect($("#f-pend"),  toOps(sets.pend ), "Semua");
+  fillSelect($("#f-prov"),  toOps(sets.prov ), "Semua");
+  fillSelect($("#f-kota"),  toOps(sets.kota ), "Semua");
   if(sets.minat.has(cur.minat)) $("#f-minat").value = cur.minat;
   if(sets.peng .has(cur.peng )) $("#f-peng").value  = cur.peng;
   if(sets.pend .has(cur.pend )) $("#f-pend").value  = cur.pend;
@@ -321,7 +277,7 @@ function rebuildOtherFiltersFromDate(){
   if(sets.kota .has(cur.kota )) $("#f-kota").value  = cur.kota;
 }
 
-/* ====== TABLE RENDER ====== */
+/* ====== RENDER ====== */
 function renderTable(rows){
   const start = page*PAGE_SIZE;
   const slice = rows.slice(start, start+PAGE_SIZE);
@@ -346,35 +302,23 @@ function renderTable(rows){
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
 
-/* ====== CHART + LABEL NILAI ====== */
+/* CHART + labels kecil hitam */
 const DataLabelPlugin = {
   id:'valueLabel',
   afterDatasetsDraw(chart){
-    const {ctx} = chart;
-    ctx.save(); ctx.fillStyle='#000'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.font='10px Montserrat';
-    const meta = chart.getDatasetMeta(0);
-    meta.data.forEach((bar,i)=>{
-      const val = chart.data.datasets[0].data[i];
-      if(val==null) return;
-      const p = bar.tooltipPosition();
-      ctx.fillText(String(val), p.x, p.y-2);
-    });
+    const {ctx}=chart; ctx.save(); ctx.fillStyle='#000'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.font='10px Montserrat';
+    chart.getDatasetMeta(0).data.forEach((bar,i)=>{ const v=chart.data.datasets[0].data[i]; if(v==null) return; const p=bar.tooltipPosition(); ctx.fillText(String(v), p.x, p.y-2); });
     ctx.restore();
   }
 };
+let chart;
 function renderChart(rows){
   const idxKota = headerIndex("KOTA MINAT PENEMPATAN");
   const counts = new Map();
-  rows.forEach(r=>{
-    const k=(r[idxKota]||"").toString().trim(); if(!k) return;
-    counts.set(k,(counts.get(k)||0)+1);
-  });
+  rows.forEach(r=>{ const k=String(r[idxKota]||"").trim(); if(!k) return; counts.set(k,(counts.get(k)||0)+1); });
   const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
-  const labels=top.map(d=>d[0]);
-  const data=top.map(d=>d[1]);
-
-  const ctx=document.getElementById("chart");
-  if(chart) chart.destroy();
+  const labels=top.map(d=>d[0]); const data=top.map(d=>d[1]);
+  const ctx=document.getElementById("chart"); if(chart) chart.destroy();
   chart=new Chart(ctx,{
     type:'bar',
     data:{ labels, datasets:[{ label:'Jumlah Pelamar', data, borderWidth:1, backgroundColor:'rgba(63,112,77,0.35)', borderColor:'#3F704D' }]},
@@ -384,29 +328,14 @@ function renderChart(rows){
 }
 
 /* ====== FLOW ====== */
-function recalc(){
-  const rows = filteredRows();
-  page = 0;
-  renderChart(rows);
-  renderTable(rows);
-}
+function recalc(){ const rows=filteredRows(); page=0; renderChart(rows); renderTable(rows); }
 
-/* Events: date cascading + other filters + pager */
+/* Events */
 document.addEventListener("change",(e)=>{
-  if(e.target.matches("#f-year")){
-    buildMonthOptions();        // enable & isi bulan sesuai tahun
-    rebuildOtherFiltersFromDate();
-    recalc();
-  } else if(e.target.matches("#f-month")){
-    buildDayOptions();          // enable & isi tanggal sesuai tahun+bulan
-    rebuildOtherFiltersFromDate();
-    recalc();
-  } else if(e.target.matches("#f-day")){
-    rebuildOtherFiltersFromDate();
-    recalc();
-  } else if(e.target.matches("#f-minat,#f-peng,#f-pend,#f-prov,#f-kota")){
-    recalc();
-  }
+  if(e.target.matches("#f-year")){ buildMonthOptions(); rebuildOtherFiltersFromDate(); recalc(); }
+  else if(e.target.matches("#f-month")){ buildDayOptions(); rebuildOtherFiltersFromDate(); recalc(); }
+  else if(e.target.matches("#f-day")){ rebuildOtherFiltersFromDate(); recalc(); }
+  else if(e.target.matches("#f-minat,#f-peng,#f-pend,#f-prov,#f-kota")){ recalc(); }
 });
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
@@ -416,14 +345,11 @@ function boot(){
   Papa.parse(CSV_URL,{
     download:true, header:true, skipEmptyLines:"greedy", worker:true,
     complete:(res)=>{
-      HEADER = res.meta.fields;
-      ALL = res.data.map(row => HEADER.map(h => row[h] ?? ""));
+      HEADER=res.meta.fields;
+      ALL=res.data.map(row=>HEADER.map(h=>row[h]??""));
       buildColumns();
-
-      // Build date hierarchy
       buildYearOptions();
-      rebuildOtherFiltersFromDate(); // isi filter lain berdasar tanggal (awal: semua)
-
+      rebuildOtherFiltersFromDate();
       recalc();
     },
     error:(err)=>{ console.error(err); alert("Gagal memuat CSV publish. Periksa URL Publish to the web."); }
