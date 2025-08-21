@@ -110,14 +110,11 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
-/* ========= CONFIG ========= */
-const PUBLISHED_E_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv";
-const CSV_URLS = [
-  `${PUBLISHED_E_URL}&_=${Date.now()}`,                                       // 1) Papa / fetch langsung
-  `https://r.jina.ai/http://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv&_=${Date.now()}`, // 2) proxy CORS aman
-  // 3) optional fallback via gviz + sheet name (butuh sharing "anyone with link")
-  "https://docs.google.com/spreadsheets/d/1cRKdIFwWuHauauIZsJ7_nrzSjygh7PCNhLFXuIm5b3g/gviz/tq?tqx=out:csv&sheet=Responses"
-];
+/* ====== CONFIG ====== */
+const PUB_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv";
+const PROXY_CSV = "https://r.jina.ai/http://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv";
+const PROXY_PUBHTML = "https://r.jina.ai/http://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pubhtml?gid=670178857&single=true&widget=true&headers=true";
+
 const PAGE_SIZE = 100;
 const MONTH_NAMES = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
@@ -130,17 +127,13 @@ const DISPLAY_COLUMNS = [
 ];
 
 const FILTER_MAP = {
-  ts:   "TIMESTAMP",
-  minat:"MINAT POSISI KERJA PERTAMA",
-  peng: "PENGALAMAN KERJA TERAKHIR",
-  pend: "PENDIDIKAN TERAKHIR",
-  prov: "PROVINSI MINAT PENEMPATAN",
-  kota: "KOTA MINAT PENEMPATAN"
+  ts:"TIMESTAMP", minat:"MINAT POSISI KERJA PERTAMA", peng:"PENGALAMAN KERJA TERAKHIR",
+  pend:"PENDIDIKAN TERAKHIR", prov:"PROVINSI MINAT PENEMPATAN", kota:"KOTA MINAT PENEMPATAN"
 };
 
-/* ========= STATE ========= */
+/* ====== STATE ====== */
 let HEADERS = [];
-let NAME_MAP = {};   // normalized -> real name
+let NAME_MAP = {};    // normalized header -> real header
 let ROWS = [];
 let page = 0;
 
@@ -159,7 +152,7 @@ function fillSelect(sel, values, placeholder, disable=false){
   sel.disabled = disable;
 }
 
-/* HEADERS + TABLE HEAD */
+/* TABLE HEAD */
 function buildColumns(){
   const row = $("#thead-row"); row.innerHTML="";
   DISPLAY_COLUMNS.forEach(label=>{ const th=document.createElement("th"); th.textContent=label; row.appendChild(th); });
@@ -168,13 +161,12 @@ function buildColumns(){
 /* DATE HELPERS */
 function parseDateParts(s){
   if(!s) return null;
-  let d = new Date(s);
+  const d = new Date(s);
   if(!isNaN(d)) return { y:d.getFullYear(), m:d.getMonth()+1, d:d.getDate() };
   const m = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
   if(m){
     let a=+m[1], b=+m[2], y=+m[3]; if(y<100) y+=2000;
-    let day, month; if(a>12){ day=a; month=b; } else { month=a; day=b; }
-    return { y, m:month, d:day };
+    return (a>12) ? { y, m:b, d:a } : { y, m:a, d:b };
   }
   return null;
 }
@@ -207,15 +199,12 @@ function buildDayOptions(){
   fillSelect($("#f-day"), days.map(d=>({value:String(d), label:String(d)})), "Semua Tanggal", days.length===0);
 }
 
-/* ==== FILTERED ROWS (date + others) ==== */
+/* FILTERED ROWS */
 function filteredRows(){
   const base = subsetByDate();
   const sel = {
-    minat: $("#f-minat").value,
-    peng:  $("#f-peng").value,
-    pend:  $("#f-pend").value,
-    prov:  $("#f-prov").value,
-    kota:  $("#f-kota").value
+    minat: $("#f-minat").value, peng: $("#f-peng").value, pend: $("#f-pend").value,
+    prov: $("#f-prov").value, kota: $("#f-kota").value
   };
   return base.filter(r=>{
     if(sel.minat && String(get(r,FILTER_MAP.minat)||"").trim()!==sel.minat) return false;
@@ -250,10 +239,10 @@ function rebuildOtherFiltersFromDate(){
   if(sets.kota .has(cur.kota )) $("#f-kota").value  = cur.kota;
 }
 
-/* TABLE */
+/* RENDER */
+function buildColumns(){ const row=$("#thead-row"); row.innerHTML=""; DISPLAY_COLUMNS.forEach(l=>{ const th=document.createElement("th"); th.textContent=l; row.appendChild(th); }); }
 function renderTable(rows){
-  const start = page*PAGE_SIZE;
-  const slice = rows.slice(start, start+PAGE_SIZE);
+  const start = page*PAGE_SIZE, slice = rows.slice(start, start+PAGE_SIZE);
   const tbody = $("#tbody"); tbody.innerHTML = "";
   slice.forEach(r=>{
     const tr=document.createElement("tr");
@@ -261,8 +250,8 @@ function renderTable(rows){
       const td=document.createElement("td");
       const v = get(r, label) ?? "";
       if(label.toUpperCase().includes("UPLOAD") || label.toUpperCase().includes("CV")){
-        const s=String(v||""); td.innerHTML=s.startsWith("http")?`<a href="${s}" target="_blank" rel="noopener">Link CV</a>`:s;
-      } else td.textContent = v;
+        const s=String(v||""); td.innerHTML = s.startsWith("http") ? `<a href="${s}" target="_blank" rel="noopener">Link CV</a>` : s;
+      } else td.textContent=v;
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -273,35 +262,16 @@ function renderTable(rows){
   $("#prev").disabled=page<=0;
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
-
-/* CHART + labels */
-const DataLabelPlugin = {
-  id:'valueLabel',
-  afterDatasetsDraw(chart){
-    const {ctx}=chart; ctx.save(); ctx.fillStyle='#000'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.font='10px Montserrat';
-    (chart.getDatasetMeta(0).data||[]).forEach((bar,i)=>{ const v=chart.data.datasets[0].data[i]; if(v==null) return; const p=bar.tooltipPosition(); ctx.fillText(String(v), p.x, p.y-2); });
-    ctx.restore();
-  }
-};
+const DataLabelPlugin={id:'valueLabel',afterDatasetsDraw(chart){const{ctx}=chart;ctx.save();ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.font='10px Montserrat';(chart.getDatasetMeta(0).data||[]).forEach((bar,i)=>{const v=chart.data.datasets[0].data[i];if(v==null)return;const p=bar.tooltipPosition();ctx.fillText(String(v),p.x,p.y-2);});ctx.restore();}};
 let _chart;
 function renderChart(rows){
-  const counts = new Map();
-  rows.forEach(r=>{
-    const k = String(get(r, FILTER_MAP.kota)||"").trim(); if(!k) return;
-    counts.set(k,(counts.get(k)||0)+1);
-  });
+  const counts=new Map();
+  rows.forEach(r=>{ const k=String(get(r,FILTER_MAP.kota)||"").trim(); if(!k) return; counts.set(k,(counts.get(k)||0)+1); });
   const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,15);
-  const labels=top.map(d=>d[0]); const data=top.map(d=>d[1]);
+  const labels=top.map(d=>d[0]), data=top.map(d=>d[1]);
   const ctx=document.getElementById("chart"); if(_chart) _chart.destroy();
-  _chart=new Chart(ctx,{
-    type:'bar',
-    data:{ labels, datasets:[{ label:'Jumlah Pelamar', data, borderWidth:1, backgroundColor:'rgba(63,112,77,0.35)', borderColor:'#3F704D' }]},
-    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }, plugins:{ legend:{ display:false } } },
-    plugins:[DataLabelPlugin]
-  });
+  _chart=new Chart(ctx,{ type:'bar', data:{labels,datasets:[{label:'Jumlah Pelamar',data,borderWidth:1,backgroundColor:'rgba(63,112,77,0.35)',borderColor:'#3F704D'}]}, options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{precision:0}}},plugins:{legend:{display:false}}}, plugins:[DataLabelPlugin] });
 }
-
-/* RECALC */
 function recalc(){ const rows=filteredRows(); page=0; renderChart(rows); renderTable(rows); }
 
 /* EVENTS */
@@ -314,42 +284,55 @@ document.addEventListener("change",(e)=>{
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
 
-/* ========= LOADING ========= */
-async function parseUrl(url){
-  // 1) coba Papa langsung URL
-  try{
-    const res = await new Promise((resolve,reject)=>{
-      Papa.parse(url,{ download:true, header:true, skipEmptyLines:"greedy", worker:false,
-        complete:r=>resolve(r), error:e=>reject(e)
-      });
-    });
-    if(res && res.data && res.data.length){ return res; }
-  }catch(_){}
-  // 2) fetch text lalu Papa parse
-  try{
-    const resp = await fetch(url, { cache:"no-store", redirect:"follow" });
-    const txt  = await resp.text();
-    const res  = Papa.parse(txt,{ header:true, skipEmptyLines:"greedy" });
-    if(res && res.data && res.data.length){ return res; }
-  }catch(_){}
-  throw new Error("parseUrl gagal");
+/* ====== LOADERS ====== */
+async function papaUrl(url){
+  return new Promise((resolve,reject)=>{
+    Papa.parse(url,{download:true,header:true,skipEmptyLines:"greedy",worker:false,complete:res=>resolve(res),error:err=>reject(err)});
+  });
+}
+async function fetchText(url){ const r=await fetch(url,{cache:"no-store",redirect:"follow"}); if(!r.ok) throw new Error(r.status); return r.text(); }
+function normalize(res){
+  const fields = res.meta?.fields?.length ? res.meta.fields : Object.keys(res.data[0]||{});
+  const NAME_MAP = {}; fields.forEach(h=> NAME_MAP[norm(h)] = h);
+  const rows = res.data.filter(r=>Object.keys(r).length>0);
+  return { fields, NAME_MAP, rows };
+}
+async function parsePubhtmlToRows(html){
+  const doc = new DOMParser().parseFromString(html,"text/html");
+  const table = doc.querySelector("table"); if(!table) throw new Error("pubhtml: table tidak ditemukan");
+  const trs = [...table.querySelectorAll("tr")];
+  const headers = [...trs.shift().children].map(td=>td.textContent.trim());
+  const rows = trs.map(tr=>{
+    const cells=[...tr.children].map(td=>td.textContent.trim());
+    const obj={}; headers.forEach((h,i)=> obj[h]=cells[i]??""); return obj;
+  });
+  return { headers, rows };
 }
 
+/* ====== BOOT ====== */
 async function boot(){
   try{
-    let res=null, lastErr=null;
-    for(const u of CSV_URLS){
-      try{ res = await parseUrl(u); break; }
-      catch(e){ lastErr=e; }
+    let result = null;
+    // 1) CSV publish langsung
+    try{ result = normalize(await papaUrl(`${PUB_CSV}&_=${Date.now()}`)); }
+    catch(e1){
+      // 2) CSV via proxy
+      try{ result = normalize(await papaUrl(`${PROXY_CSV}&_=${Date.now()}`)); }
+      catch(e2){
+        // 3) PUBHTML via proxy -> parse tabel
+        const html = await fetchText(`${PROXY_PUBHTML}&_=${Date.now()}`);
+        const parsed = await parsePubhtmlToRows(html);
+        // samakan struktur result seperti Papa
+        result = { fields: parsed.headers, NAME_MAP:{}, rows: parsed.rows };
+        result.fields.forEach(h=> result.NAME_MAP[norm(h)] = h);
+      }
     }
-    if(!res){ throw lastErr || new Error("CSV kosong / tidak terbaca"); }
 
-    // header & normalisasi
-    HEADERS = res.meta?.fields?.length ? res.meta.fields : Object.keys(res.data[0]||{});
-    NAME_MAP = {}; HEADERS.forEach(h=> NAME_MAP[norm(h)] = h);
-    ROWS = res.data.filter(r=>Object.keys(r).length>0);
+    HEADERS = result.fields;
+    NAME_MAP = result.NAME_MAP;
+    ROWS    = result.rows;
 
-    if(ROWS.length===0){ showLoaderError("Tidak ada data pada sheet tersebut."); hideLoader(); return; }
+    if(!ROWS.length){ showLoaderError("Tidak ada data pada sheet tersebut."); hideLoader(); return; }
 
     buildColumns();
     buildYearOptions();
@@ -359,7 +342,7 @@ async function boot(){
     hideLoader();
   }catch(err){
     console.error(err);
-    showLoaderError("Gagal memuat data. Cek kembali: link publish, akses publik, dan nama sheet 'Responses'.");
+    showLoaderError("Gagal memuat data. Jika masih muncul, kirim screenshot Console (DevTools) agar aku cek error spesifiknya.");
   }
 }
 boot();
