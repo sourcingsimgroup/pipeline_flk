@@ -48,6 +48,9 @@ body.ready .app{ opacity:1; transform:none }
 }
 .sidebar-body{ padding:12px; }
 
+/* penting untuk grid: biar anak bisa overflow dan scrollbar bekerja */
+.content{ min-width:0; }
+
 /* Mobile hamburger */
 .filter-toggle{
   display:none;
@@ -127,18 +130,19 @@ body.ready .app{ opacity:1; transform:none }
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
+  scrollbar-gutter: stable both-edges;
 
   /* UX drag-to-scroll (opsional) */
   cursor:grab;
 }
 .table-wrap:active{ cursor:grabbing; }
 
-/* Penting: lebar tabel mengikuti isi.
-   Jika total lebar kolom > lebar .table-wrap, scrollbar horizontal akan muncul */
+/* Lebar tabel mengikuti isi; scrollbar muncul jika melebihi wadah */
 table{
-  width:max-content;         /* mengikuti konten */
-  max-width:none;            /* jangan dipaksa menyempit */
+  width:max-content;
+  max-width:none;
   border-collapse:separate; border-spacing:0;
+  table-layout:auto;
 }
 thead th{
   position:sticky; top:0; z-index:2;
@@ -513,7 +517,7 @@ async function parsePubhtmlToRows(html){
   const table=doc.querySelector("table"); if(!table) throw new Error("pubhtml: table tidak ditemukan");
   const trs=[...table.querySelectorAll("tr")];
   const headers=[...trs.shift().children].map(td=>td.textContent.trim());
-  const rows=trs.map(tr=>{ const cells=[...tr.children].map(td=>td.textContent.trim()); const obj={}; headers.forEach((h,i)=> obj[h]=cells[i]??""); return obj; });
+  const rows=trs.map(tr=>{ const cells=[...tr.children].map(td=>td.textContent.trim()); const obj={}; headers.forEach((h,i)=> obj[h]=cells[i]??"" ); return obj; });
   return { headers, rows };
 }
 
