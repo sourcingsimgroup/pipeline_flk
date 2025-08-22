@@ -68,9 +68,7 @@ body.ready .app{ opacity:1; transform:none }
 .filter-toggle .bars::after{ bottom:0 }
 
 /* ===== Filters (kapsul) ===== */
-.filters{
-  display:grid; grid-template-columns: 1fr; gap:10px;
-}
+.filters{ display:grid; grid-template-columns: 1fr; gap:10px; }
 .capsule{
   width:100%; background:#f1f3f5; color:var(--ink);
   border:1px solid var(--line);
@@ -78,26 +76,21 @@ body.ready .app{ opacity:1; transform:none }
   box-shadow:0 1px 2px rgba(0,0,0,.04);
   padding:6px 34px 6px 12px;
 }
-/* Judul (baris 1) */
 .capsule label{
-  position:absolute; left:12px; right:34px; top:6px;
-  transform:none; margin:0;
+  position:absolute; left:12px; right:34px; top:6px; margin:0;
   font-size:11px; font-weight:800; letter-spacing:.02em;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
 }
-/* Nilai (baris 2) – non-bold, brand color */
 .capsule .cap-value{
   position:absolute; left:12px; right:34px; bottom:6px;
-  transform:none; color:var(--brand); font-weight:400; font-size:12px;
+  color:var(--brand); font-weight:400; font-size:12px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
 }
 .capsule .cap-value:empty{ display:none }
-/* Select transparan penuh area */
 .capsule select{
   position:absolute; inset:0; width:100%; height:100%;
   background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none; z-index:1;
 }
-/* Reset (✕) */
 .cap-reset{
   position:absolute; right:6px; top:50%; transform:translateY(-50%);
   z-index:2; width:22px; height:22px; border-radius:9999px;
@@ -107,16 +100,19 @@ body.ready .app{ opacity:1; transform:none }
 .cap-reset.show{ display:inline-grid; place-items:center }
 .cap-reset:hover{ background:rgba(0,0,0,.12) }
 
-/* ===== Content sections ===== */
+/* ===== Stats cards ===== */
 .section{ margin-bottom:16px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; }
 .section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
 .block{ padding:12px 16px }
 
-/* Pie cards */
-.pies{ display:grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap:12px }
-.pie-card{ background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); padding:8px 8px 4px }
-.pie-title{ margin:6px 8px 0; font-size:13px; font-weight:700; color:#1d1d1d }
-.pie-wrap canvas{ width:100%; height:240px !important; display:block }
+.stats{ display:grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap:12px }
+.stat-card{
+  background:#fff; border:1px solid var(--line); border-radius:12px;
+  padding:12px; box-shadow:0 2px 6px rgba(0,0,0,.04)
+}
+.stat-label{ font-size:12px; font-weight:700; color:#334155; margin:0 0 6px }
+.stat-kpi{ font-size:28px; font-weight:800; color:var(--brand); line-height:1 }
+.stat-sub{ font-size:11px; color:#64748b; margin-top:4px }
 
 /* Pager */
 .toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px; flex-wrap:wrap }
@@ -124,16 +120,29 @@ body.ready .app{ opacity:1; transform:none }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
 .counter{ font-weight:600 }
 
-/* Table */
-.table-wrap{ padding:0 16px 16px; max-height:65vh; overflow:auto; background:#fff; }
-table{ width:100%; border-collapse:separate; border-spacing:0 }
-thead th{ position:sticky; top:0; z-index:2; background:#f7f7f7; color:#1c1c1c; border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6; text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap }
-tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top }
+/* ===== Table (scrollable both axes) ===== */
+.table-wrap{
+  padding:0 16px 16px;
+  max-height:65vh;
+  overflow:auto;          /* penting untuk scroll */
+  -webkit-overflow-scrolling: touch;
+  background:#fff;
+}
+table{
+  width:100%;
+  min-width: 1600px;      /* paksa lebar, agar bisa horizontal scroll */
+  border-collapse:separate; border-spacing:0
+}
+thead th{
+  position:sticky; top:0; z-index:2;
+  background:#f7f7f7; color:#1c1c1c;
+  border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6;
+  text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap
+}
+tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top; white-space:nowrap }
 
 /* ===== Mobile ===== */
-@media (max-width: 900px){
-  .layout{ grid-template-columns: 260px 1fr; }
-}
+@media (max-width: 900px){ .layout{ grid-template-columns: 260px 1fr; } }
 @media (max-width: 640px){
   .layout{ grid-template-columns: 1fr; padding:0 0 16px }
   .filter-toggle{ display:flex }
@@ -143,8 +152,7 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
     border-radius:0; z-index:50; overflow:auto;
   }
   .sidebar-body{ padding:12px }
-  .pies{ grid-template-columns:1fr }
-  .pie-wrap canvas{ height:220px !important }
+  .stats{ grid-template-columns:1fr }
 }
 </style>
 </head>
@@ -226,22 +234,25 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 
     <!-- KONTEN DATA -->
     <div class="content">
-      <!-- PIE CHARTS -->
+      <!-- STATS (ganti pie) -->
       <section class="section">
-        <div class="section-head">Distribusi Pelamar (Pie)</div>
+        <div class="section-head">Ringkasan Pelamar</div>
         <div class="block">
-          <div class="pies">
-            <div class="pie-card">
-              <div class="pie-title">Sumber Informasi Lowongan — Top 5</div>
-              <div class="pie-wrap"><canvas id="pie-info"></canvas></div>
+          <div class="stats">
+            <div class="stat-card">
+              <div class="stat-label">Total Pelamar</div>
+              <div id="stat-total" class="stat-kpi">0</div>
+              <div class="stat-sub">baris hasil filter</div>
             </div>
-            <div class="pie-card">
-              <div class="pie-title">Pendidikan Terakhir — Top 5</div>
-              <div class="pie-wrap"><canvas id="pie-pend"></canvas></div>
+            <div class="stat-card">
+              <div class="stat-label">Fresh Graduate</div>
+              <div id="stat-fresh" class="stat-kpi">0</div>
+              <div class="stat-sub">durasi 0 / fresh</div>
             </div>
-            <div class="pie-card">
-              <div class="pie-title">Durasi Pengalaman Kerja — Top 5</div>
-              <div class="pie-wrap"><canvas id="pie-durasi"></canvas></div>
+            <div class="stat-card">
+              <div class="stat-label">Experienced</div>
+              <div id="stat-exp" class="stat-kpi">0</div>
+              <div class="stat-sub">durasi &gt; 0</div>
             </div>
           </div>
         </div>
@@ -268,7 +279,6 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 
 <!-- Libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
 /* ====== CONFIG ====== */
@@ -288,13 +298,12 @@ const DISPLAY_COLUMNS = [
 
 const FILTER_MAP = {
   ts:"TIMESTAMP",
-  sumber:"SUMBER INFORMASI LOWONGAN",
-  pend:"PENDIDIKAN TERAKHIR",
-  durasi:"DURASI PENGALAMAN KERJA",
   minat:"MINAT POSISI KERJA PERTAMA",
   peng:"PENGALAMAN KERJA TERAKHIR",
+  pend:"PENDIDIKAN TERAKHIR",
   prov:"PROVINSI MINAT PENEMPATAN",
-  kota:"KOTA MINAT PENEMPATAN"
+  kota:"KOTA MINAT PENEMPATAN",
+  durasi:"DURASI PENGALAMAN KERJA"
 };
 
 /* ====== STATE ====== */
@@ -421,12 +430,34 @@ function updateCapsuleValues(){
     if(!sel || !span) return;
     const hasValue = sel.selectedIndex > 0;
     span.textContent = hasValue ? sel.options[sel.selectedIndex].text : '';
-
-    // toggle tombol reset
     const cap = sel.closest('.capsule');
     const btn = cap && cap.querySelector('.cap-reset');
     if(btn) btn.classList.toggle('show', hasValue);
   });
+}
+
+/* ====== CLASSIFY FRESH / EXP ====== */
+function isFreshGraduate(row){
+  const durRaw = String(get(row, FILTER_MAP.durasi)||"").toLowerCase();
+  const peng   = String(get(row, FILTER_MAP.peng)||"").toLowerCase();
+  const t = (durRaw + " " + peng);
+
+  // kata kunci kuat
+  if(/fresh\s*graduate|freshgrad|fresh\b/.test(t)) return true;
+  if(/belum.*pengalaman|tanpa.*pengalaman|no.*experience/.test(t)) return true;
+
+  // numeric durasi (bulan/tahun)
+  const numMatch = durRaw.match(/(\d+(?:[.,]\d+)?)/);
+  if(numMatch){
+    const val = parseFloat(numMatch[1].replace(',','.'));
+    if(val === 0) return true;
+    if(val > 0) return false;
+  }
+
+  // default: kosongkan = fresh jika kolom pengalaman juga kosong/negatif
+  if(!durRaw.trim() && (!peng.trim() || /-+|tidak|belum/.test(peng))) return true;
+
+  return false; // asumsikan experienced bila tidak jelas
 }
 
 /* ====== TABLE RENDER ====== */
@@ -452,77 +483,20 @@ function renderTable(rows){
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
 
-/* ====== PIE CHARTS (Top 5) ====== */
-function palette(n){
-  const out=[];
-  for(let i=0;i<n;i++){
-    const hue = Math.round((i*360/n + 130) % 360);
-    out.push(`hsl(${hue} 45% 55%)`);
-  }
-  return out;
-}
-function groupTop5(rows, field){
-  const m=new Map();
-  rows.forEach(r=>{
-    const v=String(get(r, field)||"").trim() || "Tidak diisi";
-    m.set(v,(m.get(v)||0)+1);
-  });
-  return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
-}
-const PieLabelPlugin = {
-  id:'pieLabel',
-  afterDatasetsDraw(chart){
-    const {ctx, data} = chart;
-    const total = data.datasets[0].data.reduce((a,b)=>a+b,0) || 1;
-    const meta = chart.getDatasetMeta(0);
-    ctx.save();
-    const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    ctx.font = `${isMobile?10:11}px Montserrat`;
-    ctx.fillStyle = '#111';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    meta.data.forEach((arc, i)=>{
-      const v = data.datasets[0].data[i];
-      const pct = v/total*100;
-      if(pct < 3) return;
-      const p = arc.tooltipPosition();
-      ctx.fillText(`${pct.toFixed(0)}%`, p.x, p.y);
-    });
-    ctx.restore();
-  }
-};
-let pieInfo, piePend, pieDurasi;
-function createPie(canvasId, rows, field){
-  const ctx=document.getElementById(canvasId);
-  const arr=groupTop5(rows, field);
-  const labels=arr.map(d=>d[0]);
-  const data=arr.map(d=>d[1]);
-  const colors=palette(labels.length);
-  const chart=new Chart(ctx,{
-    type:'pie',
-    data:{ labels, datasets:[{ data, backgroundColor:colors, borderColor:'#fff', borderWidth:2 }]},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{ position:'bottom', labels:{ boxWidth:10, usePointStyle:true, pointStyle:'circle', font:{ size:11 } } },
-        tooltip:{ callbacks:{ label:(c)=>`${c.label}: ${c.parsed} (${Math.round(c.parsed/data.reduce((a,b)=>a+b,0)*100)}%)` } }
-      }
-    },
-    plugins:[PieLabelPlugin]
-  });
-  return chart;
-}
-function renderPies(rows){
-  if(pieInfo) pieInfo.destroy();
-  if(piePend) piePend.destroy();
-  if(pieDurasi) pieDurasi.destroy();
-  pieInfo   = createPie('pie-info', rows, FILTER_MAP.sumber);
-  piePend   = createPie('pie-pend', rows, FILTER_MAP.pend);
-  pieDurasi = createPie('pie-durasi', rows, FILTER_MAP.durasi);
+/* ====== STATS ====== */
+function renderStats(rows){
+  const total = rows.length;
+  let fresh = 0;
+  rows.forEach(r=>{ if(isFreshGraduate(r)) fresh++; });
+  const exp = total - fresh;
+
+  $("#stat-total").textContent = total.toLocaleString('id-ID');
+  $("#stat-fresh").textContent = fresh.toLocaleString('id-ID');
+  $("#stat-exp").textContent   = exp.toLocaleString('id-ID');
 }
 
 /* ====== RECALC ====== */
-function recalc(){ const rows=filteredRows(); page=0; renderPies(rows); renderTable(rows); updateCapsuleValues(); }
+function recalc(){ const rows=filteredRows(); page=0; renderStats(rows); renderTable(rows); updateCapsuleValues(); }
 
 /* ====== EVENTS ====== */
 document.addEventListener("change",(e)=>{
@@ -531,6 +505,7 @@ document.addEventListener("change",(e)=>{
   else if(e.target.matches("#f-day")){ rebuildOtherFiltersFromDate(); recalc(); }
   else if(e.target.matches("#f-minat,#f-peng,#f-pend,#f-prov,#f-kota")){ recalc(); }
 });
+
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
 
@@ -610,7 +585,7 @@ async function boot(){
     buildYearOptions();
     rebuildOtherFiltersFromDate();
     recalc();
-    updateCapsuleValues(); // sinkron awal
+    updateCapsuleValues();
 
     hideLoader();
   }catch(err){
