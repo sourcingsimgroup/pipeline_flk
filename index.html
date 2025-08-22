@@ -36,10 +36,17 @@ body.ready .app{ opacity:1; transform:none }
 .content{ min-width:0; } /* penting utk grid */
 
 /* ===== Mobile hamburger ===== */
-.filter-toggle{ display:none; align-items:center; gap:10px; position:sticky; top:60px; z-index:45; width:fit-content; margin:0 0 8px 16px; padding:10px 14px; background:var(--brand); color:#fff; border:none; border-radius:14px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12) }
+.filter-toggle{ display:none; align-items:center; gap:10px; position:sticky; top:60px; z-index:65; width:fit-content; margin:0 0 8px 16px; padding:10px 14px; background:var(--brand); color:#fff; border:none; border-radius:14px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12) }
 .filter-toggle .bars{ position:relative; width:18px; height:12px }
 .filter-toggle .bars::before,.filter-toggle .bars::after,.filter-toggle .bars > span{ content:""; position:absolute; left:0; right:0; height:2px; background:#fff; border-radius:2px }
 .filter-toggle .bars::before{ top:0 } .filter-toggle .bars > span{ top:5px } .filter-toggle .bars::after{ bottom:0 }
+
+/* Backdrop (mobile overlay) */
+.backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.25);
+  z-index:55; display:none;
+}
+.backdrop.show{ display:block }
 
 /* ===== Filters (capsule) ===== */
 .filters{ display:grid; grid-template-columns: 1fr; gap:10px; }
@@ -53,7 +60,7 @@ body.ready .app{ opacity:1; transform:none }
 .cap-reset.show{ display:inline-grid; place-items:center }
 
 /* ===== Popup panel multi-select ===== */
-.multi-panel{ position:fixed; z-index:60; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 28px rgba(0,0,0,.18); width:min(320px, 90vw); max-height:300px; overflow:auto; padding:8px; font-size:12px; }
+.multi-panel{ position:fixed; z-index:70; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 28px rgba(0,0,0,.18); width:min(320px, 90vw); max-height:300px; overflow:auto; padding:8px; font-size:12px; }
 .multi-item{ display:flex; align-items:center; gap:8px; padding:6px 6px; border-radius:8px; }
 .multi-item:hover{ background:#f6f7f9 }
 .multi-item input{ width:16px; height:16px }
@@ -86,16 +93,25 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 thead th.sticky-col{ position:sticky; left:0; z-index:4; background:#e9ecef; box-shadow: 2px 0 0 #e6e6e6; }
 tbody td.sticky-col{ position:sticky; left:0; z-index:3; background:#fff; box-shadow: 2px 0 0 #f0f0f0; }
 
-/* ===== Mobile tuning (BARU) ===== */
+/* ===== Responsive ===== */
+@media (max-width: 900px){
+  .layout{ grid-template-columns: 1fr; gap:12px; padding:12px }
+}
 @media (max-width: 640px){
-  /* Header kompak */
-  .header{ padding:12px 12px 8px }
-  .title{ font-size:18px }
-  .subtitle{ font-size:10px }
+  .layout{ grid-template-columns: 1fr; padding:0 0 16px }
+  .filter-toggle{ display:flex }
 
-  /* Sidebar overlay rapi */
-  .sidebar.open{ top:64px }
-  .sidebar-body{ padding:10px }
+  /* Sidebar default hidden pada mobile */
+  .sidebar{ display:none }
+
+  /* Saat dibuka, sidebar jadi overlay */
+  .sidebar.open{
+    display:block; position:fixed; left:0; right:0; top:64px; bottom:0;
+    border-radius:0; z-index:60; overflow:auto; background:var(--muted);
+  }
+
+  /* Konten tetap tampak dan fit */
+  .content{ padding:0 12px }
 
   /* Filter capsule ramping */
   .filters{ gap:8px }
@@ -122,12 +138,10 @@ tbody td.sticky-col{ position:sticky; left:0; z-index:3; background:#fff; box-sh
   /* Tabel lebih padat + scroll 2 arah */
   .table-wrap{ padding: 0 8px 8px; max-height: 70vh; overflow-x: auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   thead th{ font-size:11px; padding:8px 6px; }
-  tbody td{ font-size:11px; padding:6px; }   /* kecilkan font tabel di mobile */
+  tbody td{ font-size:11px; padding:6px; }
   thead th.sticky-col{ left:0 }
   tbody td.sticky-col{ left:0 }
 }
-
-/* ≤480px: summary 1 kolom */
 @media (max-width: 480px){
   .stats{ grid-template-columns: 1fr; }
   .stat-kpi{ font-size:16px }
@@ -153,6 +167,8 @@ tbody td.sticky-col{ position:sticky; left:0; z-index:3; background:#fff; box-sh
   <span class="bars"><span></span></span>
   <span class="label">Filter</span>
 </button>
+<!-- Backdrop untuk mobile overlay -->
+<div id="backdrop" class="backdrop" hidden></div>
 
 <main class="app">
   <div class="layout">
@@ -440,7 +456,7 @@ function openMultiPanel(key, anchorEl){
       cb.addEventListener('change', ()=>{
         if(cb.checked) MULTI[key].add(v); else MULTI[key].delete(v);
         if(key==='month'){ rebuildMonthDayOptions(); }  // bulan mempengaruhi tanggal
-        if(key==='minat' || key==='month' || key==='day'){ rebuildOtherFiltersFromDate(); } // minat/tanggal mempengaruhi filter lain
+        if(key==='minat' || key==='month' || key==='day'){ rebuildOtherFiltersFromDate(); } // minat/tanggal → filter lain
         recalc();
         updateCapsuleValues();
       });
@@ -548,12 +564,6 @@ document.getElementById('filters').addEventListener('click', (e)=>{
   openMultiPanel(key, cap);
 });
 
-/* Mobile sidebar toggle */
-const sidebarEl=document.getElementById('filterSidebar'); const toggleBtn=document.getElementById('filterToggle');
-if(toggleBtn && sidebarEl){ toggleBtn.addEventListener('click', ()=>{ const open=sidebarEl.classList.toggle('open'); toggleBtn.setAttribute('aria-expanded', open?'true':'false'); }); }
-const isMobileView=()=>window.matchMedia('(max-width: 640px)').matches;
-document.addEventListener('change',(e)=>{ if(isMobileView() && e.target.closest('#filters')){ setTimeout(()=>{ sidebarEl.classList.remove('open'); if(toggleBtn) toggleBtn.setAttribute('aria-expanded','false'); },80);} });
-
 /* Drag-to-scroll horizontal */
 (function(){
   const wrap=document.getElementById('tableWrap'); if(!wrap) return;
@@ -608,6 +618,32 @@ async function parsePubhtmlToRows(html){
   const rows=trs.map(tr=>{ const cells=[...tr.children].map(td=>td.textContent.trim()); const obj={}; headers.forEach((h,i)=> obj[h]=cells[i]??"" ); return obj; });
   return { headers, rows };
 }
+
+/* ====== Mobile sidebar toggle (overlay) ====== */
+const sidebarEl=document.getElementById('filterSidebar');
+const toggleBtn=document.getElementById('filterToggle');
+const backdropEl=document.getElementById('backdrop');
+
+function isMobile(){ return window.matchMedia('(max-width: 640px)').matches; }
+function openSidebar(){
+  if(!sidebarEl) return;
+  sidebarEl.classList.add('open');
+  if(backdropEl){ backdropEl.hidden=false; backdropEl.classList.add('show'); }
+  document.body.style.overflow='hidden';
+  toggleBtn?.setAttribute('aria-expanded','true');
+}
+function closeSidebar(){
+  if(!sidebarEl) return;
+  sidebarEl.classList.remove('open');
+  if(backdropEl){ backdropEl.classList.remove('show'); backdropEl.hidden=true; }
+  document.body.style.overflow='';
+  toggleBtn?.setAttribute('aria-expanded','false');
+}
+toggleBtn?.addEventListener('click', ()=>{ if(!isMobile()) return; const open=!sidebarEl.classList.contains('open'); open?openSidebar():closeSidebar(); });
+backdropEl?.addEventListener('click', closeSidebar);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && sidebarEl.classList.contains('open')) closeSidebar(); });
+window.addEventListener('resize', ()=>{ if(!isMobile()) closeSidebar(); });
+document.addEventListener('change',(e)=>{ if(isMobile() && e.target.closest('#filters')){ setTimeout(closeSidebar,60);} });
 
 /* ====== BOOT ====== */
 async function boot(){
