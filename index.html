@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Pipeline Applicant FLK</title>
+<title>Applicant Submission - FLK</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{ --brand:#3F704D; --bg:#fff; --ink:#212121; --muted:#f3f4f6; --line:#e5e7eb; }
@@ -28,35 +28,79 @@ body.ready .app{ opacity:1; transform:none }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
 
 /* ===== Layout (Sidebar + Content) ===== */
-.layout{ display:grid; grid-template-columns: 300px 1fr; gap:16px; padding:16px; align-items:start; }
-.sidebar{ position:sticky; top:66px; align-self:start; background:var(--muted); border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); overflow:hidden; }
-.sidebar-head{ background:var(--brand); color:#fff; padding:12px 14px; font-weight:700; letter-spacing:.01em; }
+.layout{
+  display:grid;
+  grid-template-columns: 300px 1fr;
+  gap:16px;
+  padding:16px;
+  align-items:start;
+}
+.sidebar{
+  position:sticky; top:66px; align-self:start;
+  background:var(--muted);
+  border-radius:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+.sidebar-head{
+  background:var(--brand); color:#fff;
+  padding:12px 14px; font-weight:700; letter-spacing:.01em;
+}
 .sidebar-body{ padding:12px; }
 
 /* Mobile hamburger */
 .filter-toggle{
-  display:none; align-items:center; gap:10px; position:sticky; top:60px; z-index:45;
-  width:fit-content; margin:0 0 8px 16px; padding:10px 14px; background:var(--brand); color:#fff; border:none; border-radius:14px;
+  display:none;
+  align-items:center; gap:10px;
+  position:sticky; top:60px; z-index:45;
+  width:fit-content; margin:0 0 8px 16px;
+  padding:10px 14px; background:var(--brand); color:#fff; border:none; border-radius:14px;
   font-weight:700; letter-spacing:.02em; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12)
 }
 .filter-toggle .bars{ position:relative; width:18px; height:12px }
-.filter-toggle .bars::before,.filter-toggle .bars::after,.filter-toggle .bars > span{
+.filter-toggle .bars::before,
+.filter-toggle .bars::after,
+.filter-toggle .bars > span{
   content:""; position:absolute; left:0; right:0; height:2px; background:#fff; border-radius:2px
 }
-.filter-toggle .bars::before{ top:0 } .filter-toggle .bars > span{ top:5px } .filter-toggle .bars::after{ bottom:0 }
+.filter-toggle .bars::before{ top:0 }
+.filter-toggle .bars > span{ top:5px }
+.filter-toggle .bars::after{ bottom:0 }
 
-/* ===== Filters (capsules) ===== */
+/* ===== Filters (kapsul) ===== */
 .filters{ display:grid; grid-template-columns: 1fr; gap:10px; }
-.capsule{ width:100%; background:#f1f3f5; color:var(--ink); border:1px solid var(--line);
-  border-radius:12px; min-height:48px; position:relative; box-shadow:0 1px 2px rgba(0,0,0,.04); padding:6px 34px 6px 12px; }
-.capsule label{ position:absolute; left:12px; right:34px; top:6px; font-size:11px; font-weight:800; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none }
-.capsule .cap-value{ position:absolute; left:12px; right:34px; bottom:6px; color:var(--brand); font-weight:400; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none }
+.capsule{
+  width:100%; background:#f1f3f5; color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:12px; min-height:48px; position:relative;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  padding:6px 34px 6px 12px;
+}
+.capsule label{
+  position:absolute; left:12px; right:34px; top:6px; margin:0;
+  font-size:11px; font-weight:800; letter-spacing:.02em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
+}
+.capsule .cap-value{
+  position:absolute; left:12px; right:34px; bottom:6px;
+  color:var(--brand); font-weight:400; font-size:12px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
+}
 .capsule .cap-value:empty{ display:none }
-.capsule select{ position:absolute; inset:0; width:100%; height:100%; background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none; z-index:1; }
-.cap-reset{ position:absolute; right:6px; top:50%; transform:translateY(-50%); z-index:2; width:22px; height:22px; border-radius:9999px; background:rgba(0,0,0,.06); color:#111; border:none; cursor:pointer; display:none; line-height:22px; font-size:14px; }
-.cap-reset.show{ display:inline-grid; place-items:center } .cap-reset:hover{ background:rgba(0,0,0,.12) }
+.capsule select{
+  position:absolute; inset:0; width:100%; height:100%;
+  background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none; z-index:1;
+}
+.cap-reset{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  z-index:2; width:22px; height:22px; border-radius:9999px;
+  background:rgba(0,0,0,.06); color:#111;
+  border:none; cursor:pointer; display:none; line-height:22px; font-size:14px;
+}
+.cap-reset.show{ display:inline-grid; place-items:center }
+.cap-reset:hover{ background:rgba(0,0,0,.12) }
 
-/* ===== Sections & stats ===== */
+/* ===== Sections & Stats ===== */
 .section{ margin-bottom:16px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; }
 .section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
 .block{ padding:12px 16px }
@@ -72,35 +116,39 @@ body.ready .app{ opacity:1; transform:none }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
 .counter{ font-weight:600 }
 
-/* ===== Table: enable BOTH axis scroll ===== */
+/* ===== Tabel: ukuran sesuai konten + scroll 2 arah ===== */
 .table-wrap{
   padding:0 16px 16px;
   max-height:65vh;
   background:#fff;
 
-  /* kunci scroll di wadah, bukan body */
+  /* scroll dua arah di dalam wadah ini */
   overflow-x:auto;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
 
-  /* UX drag scroll */
+  /* UX drag-to-scroll (opsional) */
   cursor:grab;
 }
-.table-wrap.grabbing{ cursor:grabbing; }
+.table-wrap:active{ cursor:grabbing; }
 
-/* penting: biar lebar mengikuti isi ⇒ horizontal scroll muncul */
+/* Penting: lebar tabel mengikuti isi.
+   Jika total lebar kolom > lebar .table-wrap, scrollbar horizontal akan muncul */
 table{
-  width:max-content;         /* gunakan lebar konten sesungguhnya */
-  min-width:1800px;          /* fallback; pastikan lebih lebar dari wadah */
+  width:max-content;         /* mengikuti konten */
+  max-width:none;            /* jangan dipaksa menyempit */
   border-collapse:separate; border-spacing:0;
 }
 thead th{
-  position:sticky; top:0; z-index:2; background:#f7f7f7; color:#1c1c1c;
+  position:sticky; top:0; z-index:2;
+  background:#f7f7f7; color:#1c1c1c;
   border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6;
-  text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap
+  text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap;
 }
-tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top; white-space:nowrap }
+tbody td{
+  padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top; white-space:nowrap;
+}
 
 /* ===== Mobile ===== */
 @media (max-width: 900px){ .layout{ grid-template-columns: 260px 1fr; } }
@@ -108,7 +156,10 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
   .layout{ grid-template-columns: 1fr; padding:0 0 16px }
   .filter-toggle{ display:flex }
   .sidebar{ display:none }
-  .sidebar.open{ display:block; position:fixed; left:0; right:0; top:60px; bottom:0; border-radius:0; z-index:50; overflow:auto; }
+  .sidebar.open{
+    display:block; position:fixed; left:0; right:0; top:60px; bottom:0;
+    border-radius:0; z-index:50; overflow:auto;
+  }
   .sidebar-body{ padding:12px }
   .stats{ grid-template-columns:1fr }
 }
@@ -133,19 +184,51 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 
 <main class="app">
   <div class="layout">
-    <!-- SIDEBAR FILTER -->
+    <!-- SIDEBAR FILTER (freeze di kiri) -->
     <aside id="filterSidebar" class="sidebar" aria-label="Filter">
       <div class="sidebar-head">Filter</div>
       <div class="sidebar-body">
         <section id="filters" class="filters">
-          <div class="capsule"><button class="cap-reset" data-for="f-year" title="Reset">✕</button><label for="f-year">Tahun</label><span class="cap-value" id="val-year"></span><select id="f-year"><option value="">Semua Tahun</option></select></div>
-          <div class="capsule"><button class="cap-reset" data-for="f-month" title="Reset">✕</button><label for="f-month">Bulan</label><span class="cap-value" id="val-month"></span><select id="f-month" disabled><option value="">Semua Bulan</option></select></div>
-          <div class="capsule"><button class="cap-reset" data-for="f-day" title="Reset">✕</button><label for="f-day">Tanggal</label><span class="cap-value" id="val-day"></span><select id="f-day" disabled><option value="">Semua Tanggal</option></select></div>
-          <div class="capsule"><button class="cap-reset" data-for="f-minat" title="Reset">✕</button><label for="f-minat">Minat Posisi</label><span class="cap-value" id="val-minat"></span><select id="f-minat"><option value="">Semua</option></select></div>
-          <div class="capsule"><button class="cap-reset" data-for="f-peng" title="Reset">✕</button><label for="f-peng">Pengalaman Terakhir</label><span class="cap-value" id="val-peng"></span><select id="f-peng"><option value="">Semua</option></select></div>
-          <div class="capsule"><button class="cap-reset" data-for="f-pend" title="Reset">✕</button><label for="f-pend">Pendidikan Terakhir</label><span class="cap-value" id="val-pend"></span><select id="f-pend"><option value="">Semua</option></select></div>
-          <div class="capsule"><button class="cap-reset" data-for="f-prov" title="Reset">✕</button><label for="f-prov">Provinsi Minat</label><span class="cap-value" id="val-prov"></span><select id="f-prov"><option value="">Semua</option></select></div>
-          <div class="capsule"><button class="cap-reset" data-for="f-kota" title="Reset">✕</button><label for="f-kota">Kota Minat</label><span class="cap-value" id="val-kota"></span><select id="f-kota"><option value="">Semua</option></select></div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-year" aria-label="Hapus filter Tahun" title="Reset">✕</button>
+            <label for="f-year">Tahun</label><span class="cap-value" id="val-year"></span>
+            <select id="f-year"><option value="">Semua Tahun</option></select>
+          </div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-month" aria-label="Hapus filter Bulan" title="Reset">✕</button>
+            <label for="f-month">Bulan</label><span class="cap-value" id="val-month"></span>
+            <select id="f-month" disabled><option value="">Semua Bulan</option></select>
+          </div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-day" aria-label="Hapus filter Tanggal" title="Reset">✕</button>
+            <label for="f-day">Tanggal</label><span class="cap-value" id="val-day"></span>
+            <select id="f-day" disabled><option value="">Semua Tanggal</option></select>
+          </div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-minat" aria-label="Hapus filter Minat Posisi" title="Reset">✕</button>
+            <label for="f-minat">Minat Posisi</label><span class="cap-value" id="val-minat"></span>
+            <select id="f-minat"><option value="">Semua</option></select>
+          </div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-peng" aria-label="Hapus filter Pengalaman Terakhir" title="Reset">✕</button>
+            <label for="f-peng">Pengalaman Terakhir</label><span class="cap-value" id="val-peng"></span>
+            <select id="f-peng"><option value="">Semua</option></select>
+          </div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-pend" aria-label="Hapus filter Pendidikan Terakhir" title="Reset">✕</button>
+            <label for="f-pend">Pendidikan Terakhir</label><span class="cap-value" id="val-pend"></span>
+            <select id="f-pend"><option value="">Semua</option></select>
+          </div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-prov" aria-label="Hapus filter Provinsi" title="Reset">✕</button>
+            <label for="f-prov">Provinsi Minat</label><span class="cap-value" id="val-prov"></span>
+            <select id="f-prov"><option value="">Semua</option></select>
+          </div>
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-kota" aria-label="Hapus filter Kota" title="Reset">✕</button>
+            <label for="f-kota">Kota Minat</label><span class="cap-value" id="val-kota"></span>
+            <select id="f-kota"><option value="">Semua</option></select>
+          </div>
         </section>
       </div>
     </aside>
@@ -377,18 +460,6 @@ function renderStats(rows){
 }
 
 /* RECALC */
-function filteredRows(){
-  const base=subsetByDate();
-  const sel={ minat:$("#f-minat").value, peng:$("#f-peng").value, pend:$("#f-pend").value, prov:$("#f-prov").value, kota:$("#f-kota").value };
-  return base.filter(r=>{
-    if(sel.minat && String(get(r,FILTER_MAP.minat)||"").trim()!==sel.minat) return false;
-    if(sel.peng  && String(get(r,FILTER_MAP.peng )||"").trim()!==sel.peng ) return false;
-    if(sel.pend  && String(get(r,FILTER_MAP.pend )||"").trim()!==sel.pend ) return false;
-    if(sel.prov  && String(get(r,FILTER_MAP.prov )||"").trim()!==sel.prov ) return false;
-    if(sel.kota  && String(get(r,FILTER_MAP.kota )||"").trim()!==sel.kota ) return false;
-    return true;
-  });
-}
 function recalc(){ const rows=filteredRows(); page=0; renderStats(rows); renderTable(rows); updateCapsuleValues(); }
 
 /* EVENTS */
@@ -414,7 +485,7 @@ if(toggleBtn && sidebarEl){ toggleBtn.addEventListener('click', ()=>{ const open
 const isMobileView=()=>window.matchMedia('(max-width: 640px)').matches;
 document.addEventListener('change',(e)=>{ if(isMobileView() && e.target.closest('#filters')){ setTimeout(()=>{ sidebarEl.classList.remove('open'); if(toggleBtn) toggleBtn.setAttribute('aria-expanded','false'); },80);} });
 
-/* DRAG TO SCROLL untuk table */
+/* Drag-to-scroll horizontal (opsional) */
 (function(){
   const wrap=document.getElementById('tableWrap'); if(!wrap) return;
   let down=false, startX=0, scrollL=0;
