@@ -6,7 +6,7 @@
 <title>Applicant Submission - FLK</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{ --brand:#3F704D; --bg:#fff; --ink:#212121; --muted:#f3f4f6; --line:#e5e7eb; }
+:root{ --brand:#3F704D; --bg:#fff; --ink:#212121; --muted:#f3f4f6; --line:#e5e7eb; --danger:#d72638; }
 *{ box-sizing:border-box }
 html,body{ width:100%; max-width:100%; overflow-x:hidden; }
 body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--ink); background:var(--bg) }
@@ -53,22 +53,15 @@ body.ready .app{ opacity:1; transform:none }
 
 /* Mobile hamburger */
 .filter-toggle{
-  display:none;
-  align-items:center; gap:10px;
-  position:sticky; top:60px; z-index:45;
-  width:fit-content; margin:0 0 8px 16px;
-  padding:10px 14px; background:var(--brand); color:#fff; border:none; border-radius:14px;
+  display:none; align-items:center; gap:10px; position:sticky; top:60px; z-index:45;
+  width:fit-content; margin:0 0 8px 16px; padding:10px 14px; background:var(--brand); color:#fff; border:none; border-radius:14px;
   font-weight:700; letter-spacing:.02em; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12)
 }
 .filter-toggle .bars{ position:relative; width:18px; height:12px }
-.filter-toggle .bars::before,
-.filter-toggle .bars::after,
-.filter-toggle .bars > span{
+.filter-toggle .bars::before,.filter-toggle .bars::after,.filter-toggle .bars > span{
   content:""; position:absolute; left:0; right:0; height:2px; background:#fff; border-radius:2px
 }
-.filter-toggle .bars::before{ top:0 }
-.filter-toggle .bars > span{ top:5px }
-.filter-toggle .bars::after{ bottom:0 }
+.filter-toggle .bars::before{ top:0 } .filter-toggle .bars > span{ top:5px } .filter-toggle .bars::after{ bottom:0 }
 
 /* ===== Filters (kapsul) ===== */
 .filters{ display:grid; grid-template-columns: 1fr; gap:10px; }
@@ -78,6 +71,7 @@ body.ready .app{ opacity:1; transform:none }
   border-radius:12px; min-height:48px; position:relative;
   box-shadow:0 1px 2px rgba(0,0,0,.04);
   padding:6px 34px 6px 12px;
+  cursor:pointer;
 }
 .capsule label{
   position:absolute; left:12px; right:34px; top:6px; margin:0;
@@ -94,6 +88,7 @@ body.ready .app{ opacity:1; transform:none }
   position:absolute; inset:0; width:100%; height:100%;
   background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none; z-index:1;
 }
+.capsule[data-multi="true"] select{ pointer-events:none } /* multi pakai panel custom, jangan ganggu klik */
 .cap-reset{
   position:absolute; right:6px; top:50%; transform:translateY(-50%);
   z-index:2; width:22px; height:22px; border-radius:9999px;
@@ -102,6 +97,16 @@ body.ready .app{ opacity:1; transform:none }
 }
 .cap-reset.show{ display:inline-grid; place-items:center }
 .cap-reset:hover{ background:rgba(0,0,0,.12) }
+
+/* Popup panel multi-select */
+.multi-panel{
+  position:fixed; z-index:60; background:#fff; border:1px solid var(--line); border-radius:12px;
+  box-shadow:0 8px 28px rgba(0,0,0,.18);
+  width:min(320px, 90vw); max-height:300px; overflow:auto; padding:8px;
+}
+.multi-item{ display:flex; align-items:center; gap:8px; padding:6px 6px; border-radius:8px; }
+.multi-item:hover{ background:#f6f7f9 }
+.multi-item input{ width:16px; height:16px }
 
 /* ===== Sections & Stats ===== */
 .section{ margin-bottom:16px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; }
@@ -117,6 +122,7 @@ body.ready .app{ opacity:1; transform:none }
 .toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px; flex-wrap:wrap }
 .btn{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; cursor:pointer }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
+.btn.danger{ background:var(--danger); }
 .counter{ font-weight:600 }
 
 /* ===== Tabel: ukuran sesuai konten + scroll 2 arah ===== */
@@ -125,34 +131,22 @@ body.ready .app{ opacity:1; transform:none }
   max-height:65vh;
   background:#fff;
 
-  /* scroll dua arah di dalam wadah ini */
-  overflow-x:auto;
-  overflow-y:auto;
+  overflow-x:auto; overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
   scrollbar-gutter: stable both-edges;
 
-  /* UX drag-to-scroll (opsional) */
   cursor:grab;
 }
 .table-wrap:active{ cursor:grabbing; }
-
-/* Lebar tabel mengikuti isi; scrollbar muncul jika melebihi wadah */
-table{
-  width:max-content;
-  max-width:none;
-  border-collapse:separate; border-spacing:0;
-  table-layout:auto;
-}
+table{ width:max-content; max-width:none; border-collapse:separate; border-spacing:0; table-layout:auto; }
 thead th{
   position:sticky; top:0; z-index:2;
   background:#f7f7f7; color:#1c1c1c;
   border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6;
   text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap;
 }
-tbody td{
-  padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top; white-space:nowrap;
-}
+tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top; white-space:nowrap; }
 
 /* ===== Mobile ===== */
 @media (max-width: 900px){ .layout{ grid-template-columns: 260px 1fr; } }
@@ -188,11 +182,12 @@ tbody td{
 
 <main class="app">
   <div class="layout">
-    <!-- SIDEBAR FILTER (freeze di kiri) -->
+    <!-- SIDEBAR FILTER -->
     <aside id="filterSidebar" class="sidebar" aria-label="Filter">
       <div class="sidebar-head">Filter</div>
       <div class="sidebar-body">
         <section id="filters" class="filters">
+          <!-- Single-select (tanggal) -->
           <div class="capsule">
             <button class="cap-reset" data-for="f-year" aria-label="Hapus filter Tahun" title="Reset">✕</button>
             <label for="f-year">Tahun</label><span class="cap-value" id="val-year"></span>
@@ -208,30 +203,32 @@ tbody td{
             <label for="f-day">Tanggal</label><span class="cap-value" id="val-day"></span>
             <select id="f-day" disabled><option value="">Semua Tanggal</option></select>
           </div>
-          <div class="capsule">
-            <button class="cap-reset" data-for="f-minat" aria-label="Hapus filter Minat Posisi" title="Reset">✕</button>
-            <label for="f-minat">Minat Posisi</label><span class="cap-value" id="val-minat"></span>
-            <select id="f-minat"><option value="">Semua</option></select>
+
+          <!-- Multi-select (custom panel) -->
+          <div class="capsule" data-multi="true" data-key="minat">
+            <button class="cap-reset" data-for="multi-minat" aria-label="Reset Minat Posisi" title="Reset">✕</button>
+            <label>Minat Posisi</label><span class="cap-value" id="val-minat"></span>
+            <select aria-hidden="true"></select>
           </div>
-          <div class="capsule">
-            <button class="cap-reset" data-for="f-peng" aria-label="Hapus filter Pengalaman Terakhir" title="Reset">✕</button>
-            <label for="f-peng">Pengalaman Terakhir</label><span class="cap-value" id="val-peng"></span>
-            <select id="f-peng"><option value="">Semua</option></select>
+          <div class="capsule" data-multi="true" data-key="peng">
+            <button class="cap-reset" data-for="multi-peng" aria-label="Reset Pengalaman Terakhir" title="Reset">✕</button>
+            <label>Pengalaman Terakhir</label><span class="cap-value" id="val-peng"></span>
+            <select aria-hidden="true"></select>
           </div>
-          <div class="capsule">
-            <button class="cap-reset" data-for="f-pend" aria-label="Hapus filter Pendidikan Terakhir" title="Reset">✕</button>
-            <label for="f-pend">Pendidikan Terakhir</label><span class="cap-value" id="val-pend"></span>
-            <select id="f-pend"><option value="">Semua</option></select>
+          <div class="capsule" data-multi="true" data-key="pend">
+            <button class="cap-reset" data-for="multi-pend" aria-label="Reset Pendidikan Terakhir" title="Reset">✕</button>
+            <label>Pendidikan Terakhir</label><span class="cap-value" id="val-pend"></span>
+            <select aria-hidden="true"></select>
           </div>
-          <div class="capsule">
-            <button class="cap-reset" data-for="f-prov" aria-label="Hapus filter Provinsi" title="Reset">✕</button>
-            <label for="f-prov">Provinsi Minat</label><span class="cap-value" id="val-prov"></span>
-            <select id="f-prov"><option value="">Semua</option></select>
+          <div class="capsule" data-multi="true" data-key="prov">
+            <button class="cap-reset" data-for="multi-prov" aria-label="Reset Provinsi" title="Reset">✕</button>
+            <label>Provinsi Minat</label><span class="cap-value" id="val-prov"></span>
+            <select aria-hidden="true"></select>
           </div>
-          <div class="capsule">
-            <button class="cap-reset" data-for="f-kota" aria-label="Hapus filter Kota" title="Reset">✕</button>
-            <label for="f-kota">Kota Minat</label><span class="cap-value" id="val-kota"></span>
-            <select id="f-kota"><option value="">Semua</option></select>
+          <div class="capsule" data-multi="true" data-key="kota">
+            <button class="cap-reset" data-for="multi-kota" aria-label="Reset Kota" title="Reset">✕</button>
+            <label>Kota Minat</label><span class="cap-value" id="val-kota"></span>
+            <select aria-hidden="true"></select>
           </div>
         </section>
       </div>
@@ -239,7 +236,7 @@ tbody td{
 
     <!-- KONTEN DATA -->
     <div class="content">
-      <!-- STATS -->
+      <!-- STATS + Pager + Download -->
       <section class="section">
         <div class="section-head">Ringkasan Pelamar</div>
         <div class="block">
@@ -252,6 +249,7 @@ tbody td{
         <div class="toolbar">
           <button id="prev" class="btn">Prev</button>
           <button id="next" class="btn">Next</button>
+          <button id="download" class="btn danger" title="Download Excel">⬇︎ Excel</button>
           <span>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</span>
         </div>
       </section>
@@ -272,6 +270,7 @@ tbody td{
 
 <!-- Libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
 /* ====== CONFIG ====== */
@@ -280,7 +279,6 @@ const PROXY_CSV = "https://r.jina.ai/http://docs.google.com/spreadsheets/d/e/2PA
 const PROXY_PUBHTML = "https://r.jina.ai/http://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pubhtml?gid=670178857&single=true&widget=true&headers=true";
 
 const PAGE_SIZE = 100;
-
 const DISPLAY_COLUMNS = [
   "TIMESTAMP","EMAIL AKTIF","SUMBER INFORMASI LOWONGAN","NAMA LENGKAP (SESUAI KTP)","TANGGAL LAHIR",
   "NOMOR WA AKTIF","NOMOR HP AKTIF","JENIS KELAMIN","PENGALAMAN KERJA TERAKHIR","DURASI PENGALAMAN KERJA",
@@ -288,7 +286,6 @@ const DISPLAY_COLUMNS = [
   "NAMA SEKOLAH / NAMA UNIVERITAS","JURUSAN","KEPEMILIKAN KENDARAAN","KEPEMILIKAN SIM AKTIF",
   "ALAMAT DOMISILI","KECAMATAN","KELURAHAN","PROVINSI MINAT PENEMPATAN","KOTA MINAT PENEMPATAN","UPLOAD CV"
 ];
-
 const FILTER_MAP = {
   ts:"TIMESTAMP",
   minat:"MINAT POSISI KERJA PERTAMA",
@@ -300,10 +297,9 @@ const FILTER_MAP = {
 };
 
 /* ====== STATE ====== */
-let HEADERS = [];
-let NAME_MAP = {};
-let ROWS = [];
-let page = 0;
+let HEADERS=[], NAME_MAP={}, ROWS=[], page=0;
+let OPTIONS={ minat:[], peng:[], pend:[], prov:[], kota:[] }; // daftar opsi (tergantung tanggal)
+let MULTI={ minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set() }; // pilihan aktif
 
 const $ = s => document.querySelector(s);
 const norm = s => String(s||"").toUpperCase().replace(/\s+/g," ").trim();
@@ -314,11 +310,7 @@ const get = (row, label) => row[ mapHeader(label) ];
 function hideLoader(){ const el=$("#loader"); if(!el) return; el.style.opacity="0"; el.style.transition="opacity .25s ease"; setTimeout(()=>{ el.style.display="none"; document.body.classList.add("ready"); }, 250); }
 function showLoaderError(msg){ $("#loader-sub").textContent = msg || "Gagal memuat data."; }
 function uniqueNumbers(arr){ return [...new Set(arr)].sort((a,b)=>a-b); }
-function fillSelect(sel, values, placeholder, disable=false){
-  sel.innerHTML=""; const base=document.createElement("option"); base.value=""; base.textContent=placeholder; sel.appendChild(base);
-  values.forEach(v=>{ const o=document.createElement("option"); o.value=v.value; o.textContent=v.label ?? v.value; sel.appendChild(o); });
-  sel.disabled = disable;
-}
+function listPreview(arr){ if(arr.length<=2) return arr.join(", "); return arr.slice(0,2).join(", ") + ` +${arr.length-2}`; }
 
 /* TABLE HEAD */
 function buildColumns(){
@@ -326,7 +318,7 @@ function buildColumns(){
   DISPLAY_COLUMNS.forEach(label=>{ const th=document.createElement("th"); th.textContent=label; row.appendChild(th); });
 }
 
-/* DATE options & filtering */
+/* ====== DATE options & filtering ====== */
 function parseDateParts(s){
   if(!s) return null;
   const d = new Date(s);
@@ -337,6 +329,11 @@ function parseDateParts(s){
     return (a>12) ? { y, m:b, d:a } : { y, m:a, d:b };
   }
   return null;
+}
+function fillSelect(sel, values, placeholder, disable=false){
+  sel.innerHTML=""; const base=document.createElement("option"); base.value=""; base.textContent=placeholder; sel.appendChild(base);
+  values.forEach(v=>{ const o=document.createElement("option"); o.value=v.value; o.textContent=v.label ?? v.value; sel.appendChild(o); });
+  sel.disabled = disable;
 }
 function buildYearOptions(){
   const years = uniqueNumbers( ROWS.map(r=>parseDateParts(get(r,FILTER_MAP.ts))?.y).filter(Boolean) );
@@ -368,19 +365,7 @@ function buildDayOptions(){
   fillSelect($("#f-day"), days.map(d=>({value:String(d), label:String(d)})), "Semua Tanggal", days.length===0);
 }
 
-/* FILTERED ROWS */
-function filteredRows(){
-  const base = subsetByDate();
-  const sel = { minat:$("#f-minat").value, peng:$("#f-peng").value, pend:$("#f-pend").value, prov:$("#f-prov").value, kota:$("#f-kota").value };
-  return base.filter(r=>{
-    if(sel.minat && String(get(r,FILTER_MAP.minat)||"").trim()!==sel.minat) return false;
-    if(sel.peng  && String(get(r,FILTER_MAP.peng )||"").trim()!==sel.peng ) return false;
-    if(sel.pend  && String(get(r,FILTER_MAP.pend )||"").trim()!==sel.pend ) return false;
-    if(sel.prov  && String(get(r,FILTER_MAP.prov )||"").trim()!==sel.prov ) return false;
-    if(sel.kota  && String(get(r,FILTER_MAP.kota )||"").trim()!==sel.kota ) return false;
-    return true;
-  });
-}
+/* ====== OPTIONS for multi filters (depend on date subset) ====== */
 function rebuildOtherFiltersFromDate(){
   const base = subsetByDate();
   const sets = { minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set() };
@@ -391,35 +376,107 @@ function rebuildOtherFiltersFromDate(){
     sets.prov .add(String(get(r,FILTER_MAP.prov )||"").trim());
     sets.kota .add(String(get(r,FILTER_MAP.kota )||"").trim());
   });
-  const toOps = set => [...set].filter(Boolean).sort().map(v=>({value:v,label:v}));
-  const cur = { minat:$("#f-minat").value, peng:$("#f-peng").value, pend:$("#f-pend").value, prov:$("#f-prov").value, kota:$("#f-kota").value };
-  fillSelect($("#f-minat"), toOps(sets.minat), "Semua");
-  fillSelect($("#f-peng"),  toOps(sets.peng ), "Semua");
-  fillSelect($("#f-pend"),  toOps(sets.pend ), "Semua");
-  fillSelect($("#f-prov"),  toOps(sets.prov ), "Semua");
-  fillSelect($("#f-kota"),  toOps(sets.kota ), "Semua");
-  if(sets.minat.has(cur.minat)) $("#f-minat").value = cur.minat;
-  if(sets.peng .has(cur.peng )) $("#f-peng").value  = cur.peng;
-  if(sets.pend .has(cur.pend )) $("#f-pend").value  = cur.pend;
-  if(sets.prov .has(cur.prov )) $("#f-prov").value  = cur.prov;
-  if(sets.kota .has(cur.kota )) $("#f-kota").value  = cur.kota;
+  OPTIONS.minat = [...sets.minat].filter(Boolean).sort();
+  OPTIONS.peng  = [...sets.peng ].filter(Boolean).sort();
+  OPTIONS.pend  = [...sets.pend ].filter(Boolean).sort();
+  OPTIONS.prov  = [...sets.prov ].filter(Boolean).sort();
+  OPTIONS.kota  = [...sets.kota ].filter(Boolean).sort();
+
+  // pangkas pilihan yang tidak lagi tersedia di subset tanggal
+  for (const k of Object.keys(MULTI)) {
+    MULTI[k] = new Set([...MULTI[k]].filter(v => OPTIONS[k].includes(v)));
+  }
+  updateCapsuleValues(); // refresh label di kapsul
 }
 
-/* CAPSULE value + reset toggle */
-function updateCapsuleValues(){
-  [
-    ['#f-year','#val-year'],['#f-month','#val-month'],['#f-day','#val-day'],
-    ['#f-minat','#val-minat'],['#f-peng','#val-peng'],['#f-pend','#val-pend'],['#f-prov','#val-prov'],['#f-kota','#val-kota'],
-  ].forEach(([selId,valId])=>{
-    const sel=document.querySelector(selId), span=document.querySelector(valId);
-    if(!sel||!span) return;
-    const has=sel.selectedIndex>0;
-    span.textContent=has? sel.options[sel.selectedIndex].text : '';
-    const btn=sel.closest('.capsule')?.querySelector('.cap-reset'); if(btn) btn.classList.toggle('show', has);
+/* ====== FILTERED ROWS (multi support) ====== */
+function filteredRows(){
+  const base = subsetByDate();
+  const hasAny = k => MULTI[k] && MULTI[k].size>0;
+  return base.filter(r=>{
+    if(hasAny('minat') && !MULTI.minat.has(String(get(r,FILTER_MAP.minat)||"").trim())) return false;
+    if(hasAny('peng' ) && !MULTI.peng .has(String(get(r,FILTER_MAP.peng )||"").trim())) return false;
+    if(hasAny('pend' ) && !MULTI.pend .has(String(get(r,FILTER_MAP.pend )||"").trim())) return false;
+    if(hasAny('prov' ) && !MULTI.prov .has(String(get(r,FILTER_MAP.prov )||"").trim())) return false;
+    if(hasAny('kota' ) && !MULTI.kota .has(String(get(r,FILTER_MAP.kota )||"").trim())) return false;
+    return true;
   });
 }
 
-/* classify fresh/exp */
+/* ====== CAPSULE value + reset toggle ====== */
+function updateCapsuleValues(){
+  // tanggal (single)
+  const setCap = (selId, valId) => {
+    const sel=$(selId), span=$(valId);
+    if(sel && span){
+      const has=sel.selectedIndex>0;
+      span.textContent = has ? sel.options[sel.selectedIndex].text : '';
+      const btn=sel.closest('.capsule')?.querySelector('.cap-reset');
+      if(btn) btn.classList.toggle('show', has);
+    }
+  };
+  setCap('#f-year','#val-year'); setCap('#f-month','#val-month'); setCap('#f-day','#val-day');
+
+  // multi
+  for (const key of Object.keys(MULTI)) {
+    const span = document.getElementById(`val-${key}`);
+    const cap  = span?.closest('.capsule');
+    const arr  = [...MULTI[key]];
+    if(span){
+      span.textContent = arr.length ? listPreview(arr) : '';
+      const btn=cap?.querySelector('.cap-reset'); if(btn) btn.classList.toggle('show', !!arr.length);
+    }
+  }
+}
+
+/* ====== Multi-select panel ====== */
+let openPanel=null;
+function closePanel(){ if(openPanel){ openPanel.remove(); openPanel=null; } }
+function openMultiPanel(key, anchorEl){
+  closePanel();
+  const rect = anchorEl.getBoundingClientRect();
+  const panel = document.createElement('div');
+  panel.className='multi-panel';
+  panel.style.left = Math.min(rect.left, window.innerWidth-340) + 'px';
+  panel.style.top  = (rect.bottom + 6) + 'px';
+
+  const opts = OPTIONS[key] || [];
+  if(!opts.length){
+    panel.innerHTML = '<div class="multi-item" style="opacity:.7">Tidak ada opsi.</div>';
+  }else{
+    opts.forEach(v=>{
+      const id = `chk-${key}-${btoa(unescape(encodeURIComponent(v))).replace(/=+$/,'')}`;
+      const wrap=document.createElement('label');
+      wrap.className='multi-item';
+      wrap.innerHTML = `<input type="checkbox" id="${id}"> <span>${v}</span>`;
+      const cb = wrap.querySelector('input');
+      cb.checked = MULTI[key].has(v);
+      cb.addEventListener('change', ()=>{
+        if(cb.checked) MULTI[key].add(v); else MULTI[key].delete(v);
+        updateCapsuleValues();
+        recalc(); // setiap perubahan langsung terapkan filter
+      });
+      panel.appendChild(wrap);
+    });
+  }
+
+  document.body.appendChild(panel);
+  openPanel = panel;
+
+  // klik di luar untuk menutup
+  setTimeout(()=>{ // delay kecil agar klik awal tidak langsung menutup
+    document.addEventListener('mousedown', onDocDown, { once:true, capture:true });
+  }, 0);
+  function onDocDown(e){
+    if(panel.contains(e.target) || anchorEl.contains(e.target)){ // klik di dalam, biarkan
+      document.addEventListener('mousedown', onDocDown, { once:true, capture:true });
+      return;
+    }
+    closePanel();
+  }
+}
+
+/* ====== classify fresh/exp ====== */
 function isFreshGraduate(row){
   const dur = String(get(row, FILTER_MAP.durasi)||"").toLowerCase();
   const peng= String(get(row, FILTER_MAP.peng)||"").toLowerCase();
@@ -431,7 +488,7 @@ function isFreshGraduate(row){
   return false;
 }
 
-/* TABLE render */
+/* ====== TABLE render ====== */
 function renderTable(rows){
   const start=page*PAGE_SIZE, slice=rows.slice(start,start+PAGE_SIZE);
   const tbody=$("#tbody"); tbody.innerHTML="";
@@ -454,7 +511,7 @@ function renderTable(rows){
   $("#next").disabled=(start+PAGE_SIZE)>=rows.length;
 }
 
-/* STATS */
+/* ====== STATS ====== */
 function renderStats(rows){
   const total=rows.length; let fresh=0; rows.forEach(r=>{ if(isFreshGraduate(r)) fresh++; });
   const exp=total-fresh;
@@ -463,24 +520,43 @@ function renderStats(rows){
   $("#stat-exp").textContent=exp.toLocaleString('id-ID');
 }
 
-/* RECALC */
-function recalc(){ const rows=filteredRows(); page=0; renderStats(rows); renderTable(rows); updateCapsuleValues(); }
+/* ====== RECALC ====== */
+function recalc(){ const rows=filteredRows(); page=0; renderStats(rows); renderTable(rows); }
 
-/* EVENTS */
+/* ====== EVENTS ====== */
 document.addEventListener("change",(e)=>{
-  if(e.target.matches("#f-year")){ buildMonthOptions(); rebuildOtherFiltersFromDate(); recalc(); }
-  else if(e.target.matches("#f-month")){ buildDayOptions(); rebuildOtherFiltersFromDate(); recalc(); }
-  else if(e.target.matches("#f-day")){ rebuildOtherFiltersFromDate(); recalc(); }
-  else if(e.target.matches("#f-minat,#f-peng,#f-pend,#f-prov,#f-kota")){ recalc(); }
+  if(e.target.matches("#f-year")){
+    buildMonthOptions();
+    buildDayOptions(); // reset hari saat ganti tahun
+    rebuildOtherFiltersFromDate(); recalc(); updateCapsuleValues();
+  } else if(e.target.matches("#f-month")){
+    buildDayOptions();
+    rebuildOtherFiltersFromDate(); recalc(); updateCapsuleValues();
+  } else if(e.target.matches("#f-day")){
+    rebuildOtherFiltersFromDate(); recalc(); updateCapsuleValues();
+  }
 });
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
 
-/* Reset cepat */
+/* Reset cepat (single & multi) */
 document.addEventListener('click', (e)=>{
   const btn=e.target.closest('.cap-reset'); if(!btn) return;
-  const id=btn.getAttribute('data-for'); const sel=document.getElementById(id);
-  if(!sel) return; sel.value=''; sel.dispatchEvent(new Event('change',{bubbles:true}));
+  const forId=btn.getAttribute('data-for');
+  if(forId?.startsWith('multi-')){
+    const key=forId.replace('multi-','');
+    if(MULTI[key]){ MULTI[key].clear(); updateCapsuleValues(); recalc(); }
+  }else{
+    const sel=document.getElementById(forId);
+    if(!sel) return; sel.value=''; sel.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+});
+
+/* Buka panel multi saat kapsul diklik */
+document.getElementById('filters').addEventListener('click', (e)=>{
+  const cap = e.target.closest('.capsule[data-multi="true"]'); if(!cap) return;
+  const key = cap.getAttribute('data-key'); if(!key) return;
+  openMultiPanel(key, cap);
 });
 
 /* Mobile sidebar toggle */
@@ -498,6 +574,20 @@ document.addEventListener('change',(e)=>{ if(isMobileView() && e.target.closest(
   wrap.addEventListener('mouseup',()=>{ down=false; wrap.classList.remove('grabbing'); });
   wrap.addEventListener('mousemove',e=>{ if(!down) return; e.preventDefault(); const x=e.pageX - wrap.offsetLeft; const walk=(x-startX); wrap.scrollLeft = scrollL - walk; });
 })();
+
+/* ====== DOWNLOAD EXCEL (filtered only) ====== */
+document.getElementById('download').addEventListener('click', ()=>{
+  const rows = filteredRows();
+  const data = rows.map(r=>{
+    const o={}; DISPLAY_COLUMNS.forEach(col=>{ o[col]= get(r,col) ?? "" }); return o;
+  });
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Filtered');
+  const pad=n=>String(n).padStart(2,'0'); const t=new Date();
+  const name=`pipeline_flk_filtered_${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}_${pad(t.getHours())}${pad(t.getMinutes())}.xlsx`;
+  XLSX.writeFile(wb, name);
+});
 
 /* ====== LOADING DATA (CSV → proxy → pubhtml) ====== */
 async function papaUrl(url){
@@ -538,7 +628,14 @@ async function boot(){
     HEADERS=result.fields; NAME_MAP=result.NAME_MAP; ROWS=result.rows;
     if(!ROWS.length){ showLoaderError("Tidak ada data pada sheet tersebut."); hideLoader(); return; }
 
-    buildColumns(); buildYearOptions(); rebuildOtherFiltersFromDate(); recalc(); updateCapsuleValues(); hideLoader();
+    buildColumns();
+    buildYearOptions();
+    buildMonthOptions();
+    buildDayOptions();
+    rebuildOtherFiltersFromDate();
+    updateCapsuleValues();
+    recalc();
+    hideLoader();
   }catch(err){ console.error(err); showLoaderError("Gagal memuat data. Cek Console untuk detail error."); }
 }
 boot();
