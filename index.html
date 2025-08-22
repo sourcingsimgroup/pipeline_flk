@@ -6,7 +6,7 @@
 <title>Pipeline Applicant FLK</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{ --brand:#3F704D; --bg:#fff; --ink:#222; }
+:root{ --brand:#3F704D; --bg:#fff; --ink:#212121; --muted:#f3f4f6; --line:#e5e7eb; }
 *{ box-sizing:border-box }
 html,body{ width:100%; max-width:100%; overflow-x:hidden; }
 body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--ink); background:var(--bg) }
@@ -23,108 +23,128 @@ body{ margin:0; font-family:Montserrat,system-ui,Arial,sans-serif; color:var(--i
 .app{ opacity:0; transform:translateY(8px); transition:opacity .35s ease, transform .35s ease }
 body.ready .app{ opacity:1; transform:none }
 
-/* ===== Layout ===== */
-.container{ padding:0 16px }
-.header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:20; box-shadow:0 2px 6px rgba(0,0,0,.08) }
+/* ===== Header ===== */
+.header{ background:var(--brand); color:#fff; padding:18px 16px; position:sticky; top:0; z-index:40; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
 
-/* ===== Filters (grid 4x2) ===== */
-.filters{
-  padding:14px 0 6px;
+/* ===== Layout (Sidebar + Content) ===== */
+.layout{
   display:grid;
-  grid-template-columns: repeat(4, 200px);
-  gap:12px;
-  justify-content:center;
-  position:sticky; top:66px; z-index:19; background:var(--bg)
+  grid-template-columns: 300px 1fr;
+  gap:16px;
+  padding:16px;
+  align-items:start;
+}
+.sidebar{
+  position:sticky; top:66px; align-self:start;
+  background:var(--muted);
+  border-radius:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+.sidebar-head{
+  background:var(--brand); color:#fff;
+  padding:12px 14px; font-weight:700; letter-spacing:.01em;
+}
+.sidebar-body{ padding:12px; }
+
+/* Mobile hamburger */
+.filter-toggle{
+  display:none;
+  align-items:center; gap:10px;
+  position:sticky; top:60px; z-index:45;
+  width:fit-content; margin:0 0 8px 16px;
+  padding:10px 14px; background:var(--brand); color:#fff; border:none; border-radius:14px;
+  font-weight:700; letter-spacing:.02em; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12)
+}
+.filter-toggle .bars{ position:relative; width:18px; height:12px }
+.filter-toggle .bars::before,
+.filter-toggle .bars::after,
+.filter-toggle .bars > span{
+  content:""; position:absolute; left:0; right:0; height:2px; background:#fff; border-radius:2px
+}
+.filter-toggle .bars::before{ top:0 }
+.filter-toggle .bars > span{ top:5px }
+.filter-toggle .bars::after{ bottom:0 }
+
+/* ===== Filters (kapsul) ===== */
+.filters{
+  display:grid; grid-template-columns: 1fr; gap:10px;
 }
 .capsule{
-  width:200px; background:var(--brand); color:#fff;
-  border-radius:9999px; min-height:44px; position:relative;
-  box-shadow:0 1px 3px rgba(0,0,0,.08)
+  width:100%; background:#f1f3f5; color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:12px; min-height:48px; position:relative;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  padding:6px 34px 6px 12px;
 }
-/* Judul filter (kiri) */
+/* Judul (baris 1) */
 .capsule label{
-  position:absolute; left:12px; right:100px; top:50%;
-  transform:translateY(-50%); margin:0; color:#fff;
-  font-size:12px; font-weight:800; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
+  position:absolute; left:12px; right:34px; top:6px;
+  transform:none; margin:0;
+  font-size:11px; font-weight:800; letter-spacing:.02em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
 }
-/* Nilai terpilih (kanan) – putih, non-bold */
+/* Nilai (baris 2) – non-bold, brand color */
 .capsule .cap-value{
-  position:absolute; right:28px; left:100px; top:50%;
-  transform:translateY(-50%); color:#fff; font-weight:400; font-size:12px;
-  text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
+  position:absolute; left:12px; right:34px; bottom:6px;
+  transform:none; color:var(--brand); font-weight:400; font-size:12px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none
 }
 .capsule .cap-value:empty{ display:none }
-/* Select transparan full area */
+/* Select transparan penuh area */
 .capsule select{
   position:absolute; inset:0; width:100%; height:100%;
-  background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none
+  background:transparent; border:none; outline:none; opacity:0; cursor:pointer; appearance:none; z-index:1;
 }
-.capsule::after{
-  content:""; position:absolute; right:12px; width:8px; height:8px;
-  border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg);
-  top:50%; margin-top:-6px; pointer-events:none
+/* Reset (✕) */
+.cap-reset{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  z-index:2; width:22px; height:22px; border-radius:9999px;
+  background:rgba(0,0,0,.06); color:#111;
+  border:none; cursor:pointer; display:none; line-height:22px; font-size:14px;
 }
-.capsule option{ color:#000 }
+.cap-reset.show{ display:inline-grid; place-items:center }
+.cap-reset:hover{ background:rgba(0,0,0,.12) }
 
-/* ===== Sections ===== */
-.section{ margin:12px 0 24px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; max-width:100% }
+/* ===== Content sections ===== */
+.section{ margin-bottom:16px; background:#fff; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,.06); overflow:hidden; }
 .section-head{ background:var(--brand); color:#fff; padding:12px 16px; font-weight:700 }
-
-/* Pie grid */
 .block{ padding:12px 16px }
+
+/* Pie cards */
 .pies{ display:grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap:12px }
 .pie-card{ background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); padding:8px 8px 4px }
 .pie-title{ margin:6px 8px 0; font-size:13px; font-weight:700; color:#1d1d1d }
 .pie-wrap canvas{ width:100%; height:240px !important; display:block }
 
-/* ===== Pager ===== */
+/* Pager */
 .toolbar{ display:flex; align-items:center; gap:12px; padding:0 16px 12px; color:#555; font-size:13px; flex-wrap:wrap }
 .btn{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; cursor:pointer }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
 .counter{ font-weight:600 }
 
-/* ===== Table ===== */
-.table-wrap{ padding:0 16px 16px; max-height:65vh; overflow:auto; background:#fff; max-width:100% }
+/* Table */
+.table-wrap{ padding:0 16px 16px; max-height:65vh; overflow:auto; background:#fff; }
 table{ width:100%; border-collapse:separate; border-spacing:0 }
 thead th{ position:sticky; top:0; z-index:2; background:#f7f7f7; color:#1c1c1c; border-top:3px solid var(--brand); border-bottom:2px solid #e6e6e6; text-align:left; padding:10px 8px; font-size:13px; white-space:nowrap }
 tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-align:top }
 
-/* ===== Mobile (hamburger) ===== */
-.filter-toggle{ display:none; }
-
-@media (max-width:640px){
-  .filter-toggle{
-    display:flex; align-items:center; gap:10px;
-    position:sticky; top:60px; z-index:21;
-    width:fit-content; padding:10px 14px;
-    background:var(--brand); color:#fff; border:none; border-radius:14px;
-    font-weight:700; letter-spacing:.02em; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12)
+/* ===== Mobile ===== */
+@media (max-width: 900px){
+  .layout{ grid-template-columns: 260px 1fr; }
+}
+@media (max-width: 640px){
+  .layout{ grid-template-columns: 1fr; padding:0 0 16px }
+  .filter-toggle{ display:flex }
+  .sidebar{ display:none }
+  .sidebar.open{
+    display:block; position:fixed; left:0; right:0; top:60px; bottom:0;
+    border-radius:0; z-index:50; overflow:auto;
   }
-  .filter-toggle .bars{ position:relative; width:18px; height:12px }
-  .filter-toggle .bars::before,
-  .filter-toggle .bars::after,
-  .filter-toggle .bars > span{
-    content:""; position:absolute; left:0; right:0; height:2px; background:#fff; border-radius:2px
-  }
-  .filter-toggle .bars::before{ top:0 }
-  .filter-toggle .bars > span{ top:5px }
-  .filter-toggle .bars::after{ bottom:0 }
-
-  .filters{
-    position:relative; top:auto; background:#f7f7f7; border-radius:12px;
-    padding:10px; box-shadow:0 6px 14px rgba(0,0,0,.08);
-    max-height:0; overflow:hidden; opacity:0;
-    transition:max-height .28s ease, opacity .2s ease;
-    margin-top:8px;
-
-    display:grid; grid-template-columns: 1fr; gap:10px; justify-items:stretch;
-  }
-  .filters.open{ max-height:1100px; opacity:1 }
-
-  .capsule{ width:100% }
-  .capsule label{ display:block }
-  .block canvas{ height:220px !important }
+  .sidebar-body{ padding:12px }
+  .pies{ grid-template-columns:1fr }
+  .pie-wrap canvas{ height:220px !important }
 }
 </style>
 </head>
@@ -139,88 +159,111 @@ tbody td{ padding:8px; border-bottom:1px solid #eee; font-size:13px; vertical-al
 
 <header class="header"><h1 class="title">Pipeline Applicant FLK</h1></header>
 
-<main class="container app">
-  <!-- Tombol hamburger (mobile) -->
-  <button id="filterToggle" class="filter-toggle" aria-controls="filters" aria-expanded="false" type="button">
-    <span class="bars"><span></span></span>
-    <span class="label">Filter</span>
-  </button>
+<!-- Mobile toggle -->
+<button id="filterToggle" class="filter-toggle" aria-controls="filterSidebar" aria-expanded="false" type="button">
+  <span class="bars"><span></span></span>
+  <span class="label">Filter</span>
+</button>
 
-  <!-- FILTERS -->
-  <section id="filters" class="filters">
-    <div class="capsule">
-      <label for="f-year">Tahun</label><span class="cap-value" id="val-year"></span>
-      <select id="f-year"><option value="">Semua Tahun</option></select>
-    </div>
-    <div class="capsule">
-      <label for="f-month">Bulan</label><span class="cap-value" id="val-month"></span>
-      <select id="f-month" disabled><option value="">Semua Bulan</option></select>
-    </div>
-    <div class="capsule">
-      <label for="f-day">Tanggal</label><span class="cap-value" id="val-day"></span>
-      <select id="f-day" disabled><option value="">Semua Tanggal</option></select>
-    </div>
-    <div class="capsule">
-      <label for="f-minat">Minat Posisi</label><span class="cap-value" id="val-minat"></span>
-      <select id="f-minat"><option value="">Semua</option></select>
-    </div>
-
-    <div class="capsule">
-      <label for="f-peng">Pengalaman Terakhir</label><span class="cap-value" id="val-peng"></span>
-      <select id="f-peng"><option value="">Semua</option></select>
-    </div>
-    <div class="capsule">
-      <label for="f-pend">Pendidikan Terakhir</label><span class="cap-value" id="val-pend"></span>
-      <select id="f-pend"><option value="">Semua</option></select>
-    </div>
-    <div class="capsule">
-      <label for="f-prov">Provinsi Minat</label><span class="cap-value" id="val-prov"></span>
-      <select id="f-prov"><option value="">Semua</option></select>
-    </div>
-    <div class="capsule">
-      <label for="f-kota">Kota Minat</label><span class="cap-value" id="val-kota"></span>
-      <select id="f-kota"><option value="">Semua</option></select>
-    </div>
-  </section>
-
-  <!-- PIE CHARTS -->
-  <section class="section">
-    <div class="section-head">Distribusi Pelamar (Pie)</div>
-    <div class="block">
-      <div class="pies">
-        <div class="pie-card">
-          <div class="pie-title">Sumber Informasi Lowongan — Top 5</div>
-          <div class="pie-wrap"><canvas id="pie-info"></canvas></div>
-        </div>
-        <div class="pie-card">
-          <div class="pie-title">Pendidikan Terakhir — Top 5</div>
-          <div class="pie-wrap"><canvas id="pie-pend"></canvas></div>
-        </div>
-        <div class="pie-card">
-          <div class="pie-title">Durasi Pengalaman Kerja — Top 5</div>
-          <div class="pie-wrap"><canvas id="pie-durasi"></canvas></div>
-        </div>
+<main class="app">
+  <div class="layout">
+    <!-- SIDEBAR FILTER -->
+    <aside id="filterSidebar" class="sidebar" aria-label="Filter">
+      <div class="sidebar-head">Filter</div>
+      <div class="sidebar-body">
+        <section id="filters" class="filters">
+          <!-- Tahun -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-year" aria-label="Hapus filter Tahun" title="Reset">✕</button>
+            <label for="f-year">Tahun</label><span class="cap-value" id="val-year"></span>
+            <select id="f-year"><option value="">Semua Tahun</option></select>
+          </div>
+          <!-- Bulan -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-month" aria-label="Hapus filter Bulan" title="Reset">✕</button>
+            <label for="f-month">Bulan</label><span class="cap-value" id="val-month"></span>
+            <select id="f-month" disabled><option value="">Semua Bulan</option></select>
+          </div>
+          <!-- Tanggal -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-day" aria-label="Hapus filter Tanggal" title="Reset">✕</button>
+            <label for="f-day">Tanggal</label><span class="cap-value" id="val-day"></span>
+            <select id="f-day" disabled><option value="">Semua Tanggal</option></select>
+          </div>
+          <!-- Minat -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-minat" aria-label="Hapus filter Minat Posisi" title="Reset">✕</button>
+            <label for="f-minat">Minat Posisi</label><span class="cap-value" id="val-minat"></span>
+            <select id="f-minat"><option value="">Semua</option></select>
+          </div>
+          <!-- Pengalaman -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-peng" aria-label="Hapus filter Pengalaman" title="Reset">✕</button>
+            <label for="f-peng">Pengalaman Terakhir</label><span class="cap-value" id="val-peng"></span>
+            <select id="f-peng"><option value="">Semua</option></select>
+          </div>
+          <!-- Pendidikan -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-pend" aria-label="Hapus filter Pendidikan" title="Reset">✕</button>
+            <label for="f-pend">Pendidikan Terakhir</label><span class="cap-value" id="val-pend"></span>
+            <select id="f-pend"><option value="">Semua</option></select>
+          </div>
+          <!-- Provinsi -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-prov" aria-label="Hapus filter Provinsi" title="Reset">✕</button>
+            <label for="f-prov">Provinsi Minat</label><span class="cap-value" id="val-prov"></span>
+            <select id="f-prov"><option value="">Semua</option></select>
+          </div>
+          <!-- Kota -->
+          <div class="capsule">
+            <button class="cap-reset" data-for="f-kota" aria-label="Hapus filter Kota" title="Reset">✕</button>
+            <label for="f-kota">Kota Minat</label><span class="cap-value" id="val-kota"></span>
+            <select id="f-kota"><option value="">Semua</option></select>
+          </div>
+        </section>
       </div>
-    </div>
+    </aside>
 
-    <!-- pager -->
-    <div class="toolbar">
-      <button id="prev" class="btn">Prev</button>
-      <button id="next" class="btn">Next</button>
-      <span>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</span>
-    </div>
-  </section>
+    <!-- KONTEN DATA -->
+    <div class="content">
+      <!-- PIE CHARTS -->
+      <section class="section">
+        <div class="section-head">Distribusi Pelamar (Pie)</div>
+        <div class="block">
+          <div class="pies">
+            <div class="pie-card">
+              <div class="pie-title">Sumber Informasi Lowongan — Top 5</div>
+              <div class="pie-wrap"><canvas id="pie-info"></canvas></div>
+            </div>
+            <div class="pie-card">
+              <div class="pie-title">Pendidikan Terakhir — Top 5</div>
+              <div class="pie-wrap"><canvas id="pie-pend"></canvas></div>
+            </div>
+            <div class="pie-card">
+              <div class="pie-title">Durasi Pengalaman Kerja — Top 5</div>
+              <div class="pie-wrap"><canvas id="pie-durasi"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button id="prev" class="btn">Prev</button>
+          <button id="next" class="btn">Next</button>
+          <span>Halaman <span id="pageNum" class="counter">1</span> • Menampilkan <span id="pageCount" class="counter">0</span> dari <span id="totalCount" class="counter">0</span> baris</span>
+        </div>
+      </section>
 
-  <!-- TABLE -->
-  <section class="section">
-    <div class="section-head">Tabel Data Pelamar</div>
-    <div class="table-wrap">
-      <table id="grid">
-        <thead><tr id="thead-row"></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
+      <!-- TABLE -->
+      <section class="section">
+        <div class="section-head">Tabel Data Pelamar</div>
+        <div class="table-wrap">
+          <table id="grid">
+            <thead><tr id="thead-row"></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
-  </section>
+  </div>
 </main>
 
 <!-- Libs -->
@@ -373,11 +416,16 @@ function updateCapsuleValues(){
     ['#f-kota',  '#val-kota'],
   ];
   map.forEach(([selId,valId])=>{
-    const sel = document.querySelector(selId);
+    const sel  = document.querySelector(selId);
     const span = document.querySelector(valId);
     if(!sel || !span) return;
-    const optText = sel.selectedIndex>0 ? sel.options[sel.selectedIndex].text : '';
-    span.textContent = optText; // akan hidden oleh :empty jika kosong
+    const hasValue = sel.selectedIndex > 0;
+    span.textContent = hasValue ? sel.options[sel.selectedIndex].text : '';
+
+    // toggle tombol reset
+    const cap = sel.closest('.capsule');
+    const btn = cap && cap.querySelector('.cap-reset');
+    if(btn) btn.classList.toggle('show', hasValue);
   });
 }
 
@@ -419,7 +467,7 @@ function groupTop5(rows, field){
     const v=String(get(r, field)||"").trim() || "Tidak diisi";
     m.set(v,(m.get(v)||0)+1);
   });
-  return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5); // HANYA Top 5
+  return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
 }
 const PieLabelPlugin = {
   id:'pieLabel',
@@ -486,20 +534,31 @@ document.addEventListener("change",(e)=>{
 $("#prev").addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 $("#next").addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
 
-/* ====== MOBILE: toggle drawer ====== */
-const isMobileView = () => window.matchMedia('(max-width: 640px)').matches;
-const filtersEl = document.getElementById('filters');
+/* Reset cepat per filter (ikon ✕) */
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.cap-reset');
+  if(!btn) return;
+  const targetId = btn.getAttribute('data-for');
+  const sel = document.getElementById(targetId);
+  if(!sel) return;
+  sel.value = '';
+  sel.dispatchEvent(new Event('change', { bubbles:true }));
+});
+
+/* ====== MOBILE: toggle sidebar ====== */
+const sidebarEl = document.getElementById('filterSidebar');
 const toggleBtn  = document.getElementById('filterToggle');
-if (toggleBtn && filtersEl) {
+if (toggleBtn && sidebarEl) {
   toggleBtn.addEventListener('click', () => {
-    const open = filtersEl.classList.toggle('open');
+    const open = sidebarEl.classList.toggle('open');
     toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
 }
+const isMobileView = () => window.matchMedia('(max-width: 640px)').matches;
 document.addEventListener('change', (e) => {
   if (isMobileView() && e.target.closest('#filters')) {
     setTimeout(() => {
-      filtersEl.classList.remove('open');
+      sidebarEl.classList.remove('open');
       if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
     }, 80);
   }
@@ -550,7 +609,8 @@ async function boot(){
     buildColumns();
     buildYearOptions();
     rebuildOtherFiltersFromDate();
-    recalc();              // render + update capsule values
+    recalc();
+    updateCapsuleValues(); // sinkron awal
 
     hideLoader();
   }catch(err){
