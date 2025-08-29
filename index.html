@@ -26,7 +26,8 @@ body.ready .app{ opacity:1; transform:none }
 /* ===== Header ===== */
 .header{ background:var(--brand); color:#fff; padding:14px 16px 12px; position:sticky; top:0; z-index:40; box-shadow:0 2px 6px rgba(0,0,0,.08) }
 .title{ margin:0; font-weight:700; font-size:clamp(18px,2.2vw,28px) }
-.subtitle{ margin:4px 0 0; font-size:11px; opacity:.9; letter-spacing:.02em }
+.subtitle{ margin:4px 0 0; font-size:10px; opacity:.9; letter-spacing:.02em }
+.header-actions{ position:absolute; right:12px; top:12px; display:flex; gap:8px }
 
 /* ===== Tabs ===== */
 .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:10px 16px; background:#f8fafc; border-bottom:1px solid var(--line) }
@@ -85,6 +86,7 @@ body.ready .app{ opacity:1; transform:none }
 .btn{ background:var(--brand); color:#fff; border:none; border-radius:10px; padding:8px 12px; font-weight:600; cursor:pointer }
 .btn[disabled]{ opacity:.4; cursor:not-allowed }
 .btn.danger{ background:var(--danger); }
+.btn.light{ background:#ffffff; color:#0f172a; border:1px solid var(--line) }
 
 /* ===== Table ===== */
 .table-wrap{ padding:0 16px 16px; max-height:65vh; background:#fff; overflow-x:auto; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; scrollbar-gutter: stable both-edges; cursor:grab; }
@@ -123,9 +125,44 @@ tbody td.sticky-col{ position:sticky; left:0; z-index:3; background:#fff; box-sh
   tbody td.sticky-col{ left:0 }
 }
 @media (max-width: 480px){ .stats{ grid-template-columns: 1fr; } .stat-kpi{ font-size:16px } }
+
+/* ===== Simple Login Gate ===== */
+.login-screen{ position:fixed; inset:0; z-index:10000; display:none; align-items:center; justify-content:center; padding:24px; background:linear-gradient(180deg,#0f1720 0%, #1f2937 100%); }
+.login-card{ width:min(360px, 92vw); background:#ffffff; border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.18) }
+.login-card h2{ margin:0 0 2px; font-size:18px; font-weight:800; color:#0f172a }
+.login-sub{ margin:0 0 12px; font-size:12px; color:#475569 }
+.fg{ display:flex; flex-direction:column; gap:6px; margin:10px 0 }
+.fg label{ font-size:12px; font-weight:700; color:#334155 }
+.fg input{ height:40px; padding:8px 10px; border-radius:10px; border:1px solid var(--line); font-size:14px }
+.login-actions{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px }
+.login-actions .hint{ font-size:11px; color:#64748b }
+.login-error{ display:none; margin-top:8px; font-size:12px; color:#b91c1c; font-weight:700 }
+body.noauth #login{ display:flex }
+body.noauth header, body.noauth .tabs, body.noauth .filter-toggle, body.noauth main, body.noauth #loader{ display:none !important }
 </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login" class="login-screen" aria-modal="true" role="dialog" aria-labelledby="loginTitle" aria-describedby="loginDesc">
+  <div class="login-card">
+    <h2 id="loginTitle">Masuk</h2>
+    <p id="loginDesc" class="login-sub">Masukkan kredensial untuk mengakses dashboard.</p>
+    <div class="fg">
+      <label for="u">Username</label>
+      <input id="u" name="u" autocomplete="username" placeholder="Username" />
+    </div>
+    <div class="fg">
+      <label for="p">Password</label>
+      <input id="p" name="p" type="password" autocomplete="current-password" placeholder="Password" />
+    </div>
+    <div class="login-error" id="loginError">Username / password salah.</div>
+    <div class="login-actions">
+      <button id="loginBtn" class="btn" type="button">Login</button>
+      <span class="hint">user & pass: <b>sourcingho</b></span>
+    </div>
+  </div>
+</div>
 
 <!-- LOADER -->
 <div id="loader" class="loading-screen" aria-live="polite" aria-busy="true">
@@ -135,8 +172,11 @@ tbody td.sticky-col{ position:sticky; left:0; z-index:3; background:#fff; box-sh
 </div>
 
 <header class="header">
-  <h1 class="title">Applicant FLK Submission</h1>
-  <p class="subtitle">create &amp; develop by sourcing department</p>
+  <div class="header-actions">
+    <button id="logoutBtn" class="btn light" title="Logout" type="button">Logout</button>
+  </div>
+  <h1 class="title">The Pipeline -  Applicant</h1>
+  <p class="subtitle">Create &amp; Develope by Sourcing Department</p>
 </header>
 
 <!-- Tabs -->
@@ -270,6 +310,21 @@ const SOURCES = {
 };
 let currentSourceKey = 'nasional';
 
+/* ===================== AUTH (Login sederhana) ===================== */
+const AUTH = { user:'sourcingho', pass:'sourcingho', key:'pipeline_auth_v1' };
+function isAuthed(){ try { return localStorage.getItem(AUTH.key)==='1'; } catch(e){ return false; } }
+function doLogin(u,p){
+  if(u===AUTH.user && p===AUTH.pass){
+    try { localStorage.setItem(AUTH.key,'1'); } catch(e){}
+    document.body.classList.remove('noauth');
+    hideLogin();
+    boot();
+    return true;
+  }
+  return false;
+}
+function logout(){ try { localStorage.removeItem(AUTH.key); } catch(e){} location.reload(); }
+
 /* ===================== KONFIG TABEL ===================== */
 const PAGE_SIZE = 100;
 const MONTH_NAMES = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
@@ -343,7 +398,7 @@ function parseDateParts(s){
   if(!s) return null;
   const d = new Date(s);
   if(!isNaN(d)) return { y:d.getFullYear(), m:d.getMonth()+1, d:d.getDate() };
-  const m = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  const m = String(s).match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
   if(m){ let a=+m[1], b=+m[2], y=+m[3]; if(y<100) y+=2000; return (a>12) ? { y, m:b, d:a } : { y, m:a, d:b }; }
   return null;
 }
@@ -717,8 +772,37 @@ async function loadSource(key){
   }
 }
 
+/* ====== Boot & Auth wiring ====== */
 async function boot(){ await loadSource('nasional'); }
-boot();
+
+// Login UI wiring
+const uEl = document.getElementById('u');
+const pEl = document.getElementById('p');
+const loginBtn = document.getElementById('loginBtn');
+const loginErr = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+
+function showLogin(){ document.getElementById('login').style.display='flex'; setTimeout(()=>{ uEl?.focus(); }, 50); }
+function hideLogin(){ document.getElementById('login').style.display='none'; }
+
+loginBtn?.addEventListener('click', ()=>{
+  const ok = doLogin(uEl.value.trim(), pEl.value);
+  loginErr.style.display = ok ? 'none' : 'block';
+});
+[pEl,uEl].forEach(el=> el?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ loginBtn.click(); } }));
+logoutBtn?.addEventListener('click', logout);
+
+// Start gate
+document.addEventListener('DOMContentLoaded', ()=>{
+  if (isAuthed()) {
+    document.body.classList.remove('noauth');
+    hideLogin();
+    boot();
+  } else {
+    document.body.classList.add('noauth');
+    showLogin();
+  }
+});
 </script>
 </body>
 </html>
