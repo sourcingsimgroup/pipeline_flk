@@ -245,51 +245,32 @@ tbody td.sticky-col{ position:sticky; left:0; z-index:3; background:#fff; box-sh
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
-/* ===================== KONFIGURASI SUMBER ===================== */
-function toProxy(url){ return url.startsWith('https://r.jina.ai/') ? url : 'https://r.jina.ai/http://' + url.replace(/^https?:\\/\\//,''); }
-function pubhtmlToCsv(pubhtmlUrl){
-  // gdocs: .../pubhtml?gid=XXXX&single=true  -> .../pub?gid=XXXX&single=true&output=csv
-  const u = new URL(pubhtmlUrl);
-  u.pathname = u.pathname.replace(/\\/pubhtml$/, '/pub');
-  u.searchParams.set('output', 'csv');
-  return u.toString();
-}
-
+/* ===================== SUMBER CSV (langsung) ===================== */
 const SOURCES = {
   nasional: {
     label: "Nasional",
-    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv",
-    pubhtml: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pubhtml?gid=670178857&single=true&widget=true&headers=true"
+    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPLo0JpR72ovhAuJNEo4oUrKHpZXvgO63wCQkROikss2FnuMdWvg7KQYodED6FnOMIZaEF3EkHErj/pub?gid=670178857&single=true&output=csv"
   },
   lookerin: {
     label: "Lookerin",
-    pubhtml: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTudwP91Dp-gqdoenZ6O14Xl_d3czhyERTU3DVW6xM3hBEmF6B_M26rl5MsH7TKuGzg9kPvZRehhl3-/pubhtml?gid=1766980052&single=true&widget=true&headers=true"
+    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTudwP91Dp-gqdoenZ6O14Xl_d3czhyERTU3DVW6xM3hBEmF6B_M26rl5MsH7TKuGzg9kPvZRehhl3-/pub?gid=1766980052&single=true&output=csv"
   },
   adira: {
     label: "Adira",
-    pubhtml: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSUCX_B2xetToOaAet-I96kzCV_DmH3nlZhossCrhnwVmxKDIyACxfvhtQTotLrw8pKCOg4kij719wl/pubhtml?gid=0&single=true&widget=true&headers=true"
+    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSUCX_B2xetToOaAet-I96kzCV_DmH3nlZhossCrhnwVmxKDIyACxfvhtQTotLrw8pKCOg4kij719wl/pub?gid=0&single=true&output=csv"
   },
   onsite: {
     label: "Onsite",
-    pubhtml: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSX5oBFPnLyquFqCSxip-uaDlISPP0a2KBAPGEtmjr1Kj7wnfaYFUJ5xzGZWbrhvCbm9Q0U2UE2vVkc/pubhtml?gid=670178857&single=true&widget=true&headers=true"
+    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSX5oBFPnLyquFqCSxip-uaDlISPP0a2KBAPGEtmjr1Kj7wnfaYFUJ5xzGZWbrhvCbm9Q0U2UE2vVkc/pub?gid=670178857&single=true&output=csv"
   },
   ex_tad: {
     label: "EX TAD",
-    pubhtml: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTzLXwTQNrE790h2F_9MMBzRnwoOj7tjueJabMSPDxJ--JnEScLawvaIqiT1rB71a9m6X5qZS9Rm1Hk/pubhtml?gid=1855800206&single=true&widget=true&headers=true"
+    csv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTzLXwTQNrE790h2F_9MMBzRnwoOj7tjueJabMSPDxJ--JnEScLawvaIqiT1rB71a9m6X5qZS9Rm1Hk/pub?gid=1855800206&single=true&output=csv"
   }
 };
-
-// Lengkapi csv/proxy untuk semua sumber
-for (const k in SOURCES){
-  const s = SOURCES[k];
-  if (!s.csv && s.pubhtml) s.csv = pubhtmlToCsv(s.pubhtml);
-  s.proxyCsv = toProxy(s.csv);
-  s.proxyPubhtml = toProxy(s.pubhtml);
-}
-
 let currentSourceKey = 'nasional';
 
-/* ===================== KONFIGURASI TABEL & FILTER ===================== */
+/* ===================== KONFIG TABEL ===================== */
 const PAGE_SIZE = 100;
 const MONTH_NAMES = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
@@ -308,60 +289,56 @@ const EXPORT_COLUMNS = [
   "NAMA REFERENSI","TEMPAT INFORMASI","Periode","CYCLE HIRED","USIA"
 ];
 
-const FILTER_MAP = {
-  ts:"TIMESTAMP",
-  minat:"MINAT POSISI KERJA PERTAMA",
-  peng:"PENGALAMAN KERJA TERAKHIR",
-  pend:"PENDIDIKAN TERAKHIR",
-  prov:"PROVINSI MINAT PENEMPATAN",
-  kota:"KOTA MINAT PENEMPATAN",
-  durasi:"DURASI PENGALAMAN KERJA"
-};
-
-/* ====== Alias & pencari header pintar ====== */
+/* ====== Header alias agar Nama selalu muncul ====== */
 const HEADER_ALIASES = {
   "NAMA LENGKAP (SESUAI KTP)": [
     "NAMA LENGKAP (SESUAI KTP)","NAMA LENGKAP","NAMA","NAMA LENGKAP ( SESUAI KTP )","NAMA LENGKAP (KTP)","FULL NAME","NAMA LENGKAP/SUAI KTP"
   ]
 };
 
+/* ===================== STATE & CACHE ===================== */
 let HEADERS=[], NAME_MAP={}, ROWS=[], page=0;
 let OPTIONS={ month:[], day:[], minat:[], peng:[], pend:[], prov:[], kota:[] };
 let MULTI={ month:new Set(), day:new Set(), minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set() };
 
+const CACHE = new Map(); // key -> {HEADERS, NAME_MAP, ROWS}
+
 const $ = s => document.querySelector(s);
 const norm = s => String(s||"").toUpperCase().replace(/\s+/g," ").replace(/[\u200B-\u200D\uFEFF]/g,"").trim();
+
+function buildNameMap(headers){
+  const map={};
+  headers.forEach(h=> map[norm(h)] = h);
+  // isi alias -> header asli
+  for(const canon in HEADER_ALIASES){
+    for(const al of HEADER_ALIASES[canon]){
+      const n = norm(al);
+      if(map[n]){ map[norm(canon)] = map[n]; break; }
+    }
+  }
+  return map;
+}
 function findHeader(label){
   const want = norm(label);
   if (NAME_MAP[want]) return NAME_MAP[want];
-
-  // alias list
   const aliasList = HEADER_ALIASES[label] || [];
   for (const a of aliasList){
     const n = norm(a);
     if (NAME_MAP[n]) return NAME_MAP[n];
   }
-  // coba cocokkan by includes (mis. "NAMA" dan "LENGKAP")
+  // fallback partial match
   const tokens = want.split(" ").filter(Boolean);
-  const candidate = HEADERS.find(h=>{
-    const nh = norm(h);
-    return tokens.every(t => nh.includes(t)) || nh.replace(/[()]/g,"").includes(tokens.join(" "));
-  });
-  if (candidate) return candidate;
-
-  return label; // fallback
+  const candidate = HEADERS.find(h=> tokens.every(t => norm(h).includes(t)));
+  return candidate || label;
 }
 const get = (row, label) => row[ findHeader(label) ] ?? "";
 
-/* ====== Loader ====== */
 function hideLoader(){ const el=$("#loader"); if(!el) return; el.style.opacity="0"; el.style.transition="opacity .25s ease"; setTimeout(()=>{ el.style.display="none"; document.body.classList.add("ready"); }, 250); }
 function showLoader(){ const el=$("#loader"); if(!el) return; el.style.display="flex"; el.style.opacity="1"; document.body.classList.remove("ready"); }
 function setLoaderText(t){ const el=$("#loader-sub"); if(el) el.textContent = t; }
 function showLoaderError(msg){ setLoaderText(msg || "Gagal memuat data."); }
 
-/* ====== Utils ====== */
-function uniqueNumbers(arr){ return [...new Set(arr)].sort((a,b)=>a-b); }
-function listPreview(arr){ if(arr.length<=2) return arr.join(", "); return arr.slice(0,2).join(", ") + ` +${arr.length-2}`; }
+/* ====== Utils tanggal & usia ====== */
 function parseDateParts(s){
   if(!s) return null;
   const d = new Date(s);
@@ -378,7 +355,7 @@ function computeAge(dobString){
   return (age>=0 && age<130) ? String(age) : "";
 }
 
-/* ====== TABLE HEAD ====== */
+/* ====== Build columns ====== */
 function buildColumns(){
   const row = $("#thead-row"); row.innerHTML="";
   TABLE_DISPLAY_COLUMNS.forEach((label,idx)=>{
@@ -388,43 +365,49 @@ function buildColumns(){
   });
 }
 
-/* ====== YEAR SELECT ====== */
+/* ====== Filter helpers ====== */
 function fillSelect(sel, values, placeholder, disable=false){
   sel.innerHTML=""; const base=document.createElement("option"); base.value=""; base.textContent=placeholder; sel.appendChild(base);
   values.forEach(v=>{ const o=document.createElement("option"); o.value=v.value; o.textContent=v.label ?? v.value; sel.appendChild(o); });
   sel.disabled = disable;
 }
 function buildYearOptions(){
-  const years = uniqueNumbers( ROWS.map(r=>parseDateParts(get(r,FILTER_MAP.ts))?.y).filter(Boolean) );
+  const years = [...new Set(ROWS.map(r=>r._y).filter(Boolean))].sort((a,b)=>a-b);
   fillSelect($("#f-year"), years.map(y=>({value:String(y), label:String(y)})), "Semua Tahun", years.length===0);
 }
 function selectedYear(){ return parseInt($("#f-year").value || "0", 10) || null; }
 
-/* ====== MONTH/DAY OPTIONS ====== */
 function rebuildMonthDayOptions(){
   const y = selectedYear();
-  const rowsY = ROWS.filter(r=>{ const P=parseDateParts(get(r,FILTER_MAP.ts)); return P && (!y || P.y===y); });
-  OPTIONS.month = uniqueNumbers(rowsY.map(r=>parseDateParts(get(r,FILTER_MAP.ts)).m)).filter(Boolean);
+  const rowsY = ROWS.filter(r=> (!y || r._y===y) );
+  const months = [...new Set(rowsY.map(r=>r._m).filter(Boolean))].sort((a,b)=>a-b);
+  const days   = [...new Set(rowsY.filter(r=>!MULTI.month.size || MULTI.month.has(r._m)).map(r=>r._d).filter(Boolean))].sort((a,b)=>a-b);
+  OPTIONS.month = months;
+  OPTIONS.day   = days;
   MULTI.month = new Set([...MULTI.month].filter(v => OPTIONS.month.includes(v)));
-
-  const rowsYM = rowsY.filter(r=>{ const P=parseDateParts(get(r,FILTER_MAP.ts)); return MULTI.month.size ? MULTI.month.has(P.m) : true; });
-  OPTIONS.day = uniqueNumbers(rowsYM.map(r=>parseDateParts(get(r,FILTER_MAP.ts)).d)).filter(Boolean);
-  MULTI.day = new Set([...MULTI.day].filter(v => OPTIONS.day.includes(v)));
+  MULTI.day   = new Set([...MULTI.day  ].filter(v => OPTIONS.day  .includes(v)));
 }
 
-/* ====== SUBSET BY DATE ====== */
 function subsetByDate(){
   const y = selectedYear(); const hasM=MULTI.month.size>0; const hasD=MULTI.day.size>0;
   return ROWS.filter(r=>{
-    const P = parseDateParts(get(r,FILTER_MAP.ts)); if(!P) return false;
-    if(y && P.y!==y) return false;
-    if(hasM && !MULTI.month.has(P.m)) return false;
-    if(hasD && !MULTI.day.has(P.d)) return false;
+    if(y && r._y!==y) return false;
+    if(hasM && !MULTI.month.has(r._m)) return false;
+    if(hasD && !MULTI.day.has(r._d)) return false;
     return true;
   });
 }
 
-/* ====== REBUILD OTHER FILTERS ====== */
+const FILTER_MAP = {
+  ts:"TIMESTAMP",
+  minat:"MINAT POSISI KERJA PERTAMA",
+  peng:"PENGALAMAN KERJA TERAKHIR",
+  pend:"PENDIDIKAN TERAKHIR",
+  prov:"PROVINSI MINAT PENEMPATAN",
+  kota:"KOTA MINAT PENEMPATAN",
+  durasi:"DURASI PENGALAMAN KERJA"
+};
+
 function rebuildOtherFiltersFromDate(){
   let base = subsetByDate();
   if(MULTI.minat.size){
@@ -450,7 +433,6 @@ function rebuildOtherFiltersFromDate(){
   }
 }
 
-/* ====== FILTERED ROWS ====== */
 function filteredRows(){
   let base = subsetByDate();
   const hasAny = k => MULTI[k] && MULTI[k].size>0;
@@ -462,7 +444,7 @@ function filteredRows(){
   return base;
 }
 
-/* ====== CAPSULE VALUE + RESET ====== */
+/* ====== Capsule values ====== */
 function updateCapsuleValues(){
   const sel=$("#f-year"), spanY=$("#val-year");
   if(sel && spanY){
@@ -474,13 +456,13 @@ function updateCapsuleValues(){
   for (const key of Object.keys(MULTI)) {
     const span = document.getElementById(`val-${key}`); if(!span) continue;
     const arr = [...MULTI[key]]; const labels = arr.map(v=>labelOf(key,v));
-    span.textContent = arr.length ? listPreview(labels) : '';
+    span.textContent = arr.length ? labels.slice(0,2).join(", ") + (arr.length>2 ? ` +${arr.length-2}` : "") : '';
     const cap = span.closest('.capsule'); const btn = cap?.querySelector('.cap-reset');
     if(btn) btn.classList.toggle('show', !!arr.length);
   }
 }
 
-/* ====== MULTI-SELECT PANEL ====== */
+/* ====== Multi panel ====== */
 let openPanel=null;
 function closePanel(){ if(openPanel){ openPanel.remove(); openPanel=null; } }
 function openMultiPanel(key, anchorEl){
@@ -529,10 +511,10 @@ function openMultiPanel(key, anchorEl){
   }
 }
 
-/* ====== STATS ====== */
+/* ====== Stats ====== */
 function isFreshGraduate(row){
-  const dur = String(get(row, FILTER_MAP.durasi)).toLowerCase();
-  const peng= String(get(row, FILTER_MAP.peng)).toLowerCase();
+  const dur = String(get(row, "DURASI PENGALAMAN KERJA")).toLowerCase();
+  const peng= String(get(row, "PENGALAMAN KERJA TERAKHIR")).toLowerCase();
   const t=(dur+" "+peng);
   if(/fresh\s*graduate|freshgrad|fresh\b/.test(t)) return true;
   if(/belum.*pengalaman|tanpa.*pengalaman|no.*experience/.test(t)) return true;
@@ -548,14 +530,14 @@ function renderStats(rows){
   $("#stat-exp").textContent=exp.toLocaleString('id-ID');
 }
 
-/* ====== PAGER MINI TEXT ====== */
+/* ====== Pager text ====== */
 function updatePageMini(total){
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const el = document.getElementById('pageMini');
   if(el) el.textContent = `${page+1} of ${pages} halaman`;
 }
 
-/* ====== RENDER TABLE ====== */
+/* ====== Render table ====== */
 function renderTable(rows){
   const start=page*PAGE_SIZE, slice=rows.slice(start,start+PAGE_SIZE);
   const tbody=$("#tbody"); tbody.innerHTML="";
@@ -577,10 +559,10 @@ function renderTable(rows){
   updatePageMini(rows.length);
 }
 
-/* ====== RECALC ====== */
+/* ====== Recalc ====== */
 function recalc(){ const rows=filteredRows(); page=0; renderStats(rows); buildColumns(); renderTable(rows); updateCapsuleValues(); }
 
-/* ====== EVENTS ====== */
+/* ====== Events ====== */
 document.addEventListener("change",(e)=>{
   if(e.target.matches("#f-year")){
     rebuildMonthDayOptions();
@@ -591,7 +573,6 @@ document.addEventListener("change",(e)=>{
 document.getElementById('prev').addEventListener("click", ()=>{ const f=filteredRows(); if(page>0){ page--; renderTable(f);} });
 document.getElementById('next').addEventListener("click", ()=>{ const f=filteredRows(); if((page+1)*PAGE_SIZE < f.length){ page++; renderTable(f);} });
 
-/* Reset cepat */
 document.addEventListener('click', (e)=>{
   const btn=e.target.closest('.cap-reset'); if(!btn) return;
   const forId=btn.getAttribute('data-for');
@@ -608,14 +589,13 @@ document.addEventListener('click', (e)=>{
   }
 });
 
-/* Buka panel multi-select */
 document.getElementById('filters').addEventListener('click', (e)=>{
   const cap = e.target.closest('.capsule[data-multi="true"]'); if(!cap) return;
   const key = cap.getAttribute('data-key'); if(!key) return;
   openMultiPanel(key, cap);
 });
 
-/* Drag-to-scroll horizontal */
+/* ====== Drag-to-scroll ====== */
 (function(){
   const wrap=document.getElementById('tableWrap'); if(!wrap) return;
   let down=false, startX=0, scrollL=0;
@@ -625,7 +605,7 @@ document.getElementById('filters').addEventListener('click', (e)=>{
   wrap.addEventListener('mousemove',e=>{ if(!down) return; e.preventDefault(); const x=e.pageX - wrap.offsetLeft; const walk=(x-startX); wrap.scrollLeft = scrollL - walk; });
 })();
 
-/* ====== DOWNLOAD EXCEL ====== */
+/* ====== Download Excel ====== */
 document.getElementById('download').addEventListener('click', ()=>{
   const rows = filteredRows();
   const data = rows.map(r=>{
@@ -648,59 +628,34 @@ document.getElementById('download').addEventListener('click', ()=>{
   XLSX.writeFile(wb, name);
 });
 
-/* ====== FETCHERS ====== */
-async function papaUrl(url){
+/* ====== CSV Loader (dengan cache & worker=false agar simpel) ====== */
+async function papaCsv(url){
   return new Promise((resolve,reject)=>{
-    Papa.parse(url,{download:true,header:true,skipEmptyLines:"greedy",worker:false,complete:res=>resolve(res),error:err=>reject(err)});
+    Papa.parse(url,{
+      download:true,
+      header:true,
+      skipEmptyLines:"greedy",
+      worker:false, // worker off: latency kecil untuk ukuran sheet sedang
+      complete:res=>resolve(res),
+      error:err=>reject(err)
+    });
   });
 }
-async function fetchText(url){ const r=await fetch(url,{cache:"no-store",redirect:"follow"}); if(!r.ok) throw new Error(r.status); return r.text(); }
-function normalize(res){
-  const fields=res.meta?.fields?.length ? res.meta.fields : Object.keys(res.data[0]||{});
-  const NAME_MAP={}; fields.forEach(h=> NAME_MAP[norm(h)] = h);
-  const rows=res.data.filter(r=>Object.keys(r).length>0);
-  return { fields, NAME_MAP, rows };
+
+function preprocessRows(rawRows){
+  // filter baris kosong + pra-hitungan tanggal
+  return rawRows
+    .filter(r=>Object.keys(r).some(k=>String(r[k]||"").trim()!==""))
+    .map(r=>{
+      const o={...r};
+      const ts = r["TIMESTAMP"] || r["Timestamp"] || r["WAKTU"] || r["Waktu"] || "";
+      const p = parseDateParts(ts);
+      o._y = p?.y || null; o._m = p?.m || null; o._d = p?.d || null;
+      return o;
+    });
 }
 
-/* Parser pubhtml robust */
-async function parsePubhtmlToRows(html){
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const tables = [...doc.querySelectorAll("table")];
-  if (!tables.length) throw new Error("pubhtml: table tidak ditemukan");
-
-  // Pilih tabel dengan jumlah sel terbanyak
-  let table = tables[0], maxCells = 0;
-  for (const t of tables) {
-    const cells = t.querySelectorAll("td,th").length;
-    if (cells > maxCells) { maxCells = cells; table = t; }
-  }
-
-  // Header
-  const headRow = table.querySelector("thead tr") || table.querySelector("tr");
-  if (!headRow) throw new Error("pubhtml: header tidak ditemukan");
-  const headers = [...headRow.children].map(td => td.textContent.trim());
-
-  // Body
-  let bodyRows = [];
-  if (table.querySelector("thead")) {
-    const tbodies = table.querySelectorAll("tbody");
-    bodyRows = [...tbodies].flatMap(tb => [...tb.querySelectorAll("tr")]);
-  } else {
-    const all = [...table.querySelectorAll("tr")];
-    bodyRows = all.slice(1);
-  }
-
-  const rows = bodyRows.map(tr => {
-    const cells = [...tr.children].map(td => td.textContent.trim());
-    const obj = {};
-    headers.forEach((h,i)=> obj[h] = (cells[i] ?? ""));
-    return obj;
-  });
-
-  return { headers, rows };
-}
-
-/* ====== TAB SWITCHING ====== */
+/* ====== Tabs ====== */
 const tabsEl = document.querySelector('.tabs');
 tabsEl.addEventListener('click', (e)=>{
   const btn = e.target.closest('.tab'); if(!btn) return;
@@ -709,7 +664,7 @@ tabsEl.addEventListener('click', (e)=>{
   loadSource(key);
 });
 
-/* ====== MOBILE SIDEBAR TOGGLE ====== */
+/* ====== Mobile sidebar ====== */
 const sidebarEl=document.getElementById('filterSidebar');
 const toggleBtn=document.getElementById('filterToggle');
 const backdropEl=document.getElementById('backdrop');
@@ -724,45 +679,42 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape' && sidebarEl.class
 window.addEventListener('resize', ()=>{ if(!isMobile()) closeSidebar(); });
 document.addEventListener('change',(e)=>{ if(isMobile() && e.target.closest('#filters')){ setTimeout(closeSidebar,60);} });
 
-/* ====== LOADER + INIT ====== */
+/* ====== Load Source (cepat + cache) ====== */
 async function loadSource(key){
   try{
-    showLoader(); setLoaderText('Memuat data halaman…');
+    showLoader(); setLoaderText(`Memuat data ${SOURCES[key].label}…`);
     currentSourceKey = key;
 
-    // Reset state
-    HEADERS=[]; NAME_MAP={}; ROWS=[]; page=0;
+    // Cek cache
+    if (CACHE.has(key)){
+      ({HEADERS, NAME_MAP, ROWS} = CACHE.get(key));
+    } else {
+      const res = await papaCsv(`${SOURCES[key].csv}&_=${Date.now()}`);
+      const fields = res.meta?.fields?.length ? res.meta.fields : Object.keys(res.data[0]||{});
+      HEADERS = fields;
+      NAME_MAP = buildNameMap(HEADERS);
+      ROWS = preprocessRows(res.data);
+      CACHE.set(key, {HEADERS:[...HEADERS], NAME_MAP:{...NAME_MAP}, ROWS:[...ROWS]});
+    }
+
+    // Reset filter state per switch
+    page=0;
     OPTIONS={ month:[], day:[], minat:[], peng:[], pend:[], prov:[], kota:[] };
     MULTI={ month:new Set(), day:new Set(), minat:new Set(), peng:new Set(), pend:new Set(), prov:new Set(), kota:new Set() };
     $("#f-year").value=''; updateCapsuleValues();
 
-    const cfg = SOURCES[key];
-    let result=null;
-
-    // 1) CSV utama
-    try{ result=normalize(await papaUrl(`${cfg.csv}&_=${Date.now()}`)); }
-    // 2) Proxy CSV
-    catch(e1){
-      try{ result=normalize(await papaUrl(`${cfg.proxyCsv}&_=${Date.now()}`)); }
-      // 3) PubHTML fallback
-      catch(e2){
-        const html=await fetchText(`${cfg.proxyPubhtml}&_=${Date.now()}`);
-        const parsed=await parsePubhtmlToRows(html);
-        result={ fields:parsed.headers, NAME_MAP:{}, rows:parsed.rows };
-        result.fields.forEach(h=> result.NAME_MAP[norm(h)] = h);
-      }
-    }
-
-    HEADERS=result.fields; NAME_MAP=result.NAME_MAP; ROWS=result.rows;
     if(!ROWS.length){ showLoaderError("Tidak ada data pada sheet tersebut."); hideLoader(); return; }
 
     buildYearOptions();
     rebuildMonthDayOptions();
     rebuildOtherFiltersFromDate();
-    updateCapsuleValues();
+    buildColumns();
     recalc();
     hideLoader();
-  }catch(err){ console.error(err); showLoaderError("Gagal memuat data. Cek Console untuk detail error."); }
+  }catch(err){
+    console.error(err);
+    showLoaderError("Gagal memuat data (periksa akses Publish to web / koneksi).");
+  }
 }
 
 async function boot(){ await loadSource('nasional'); }
